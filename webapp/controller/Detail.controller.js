@@ -20,69 +20,44 @@ sap.ui.define(
 				this.getRouter()
 					.getRoute("Detail")
 					.attachPatternMatched(this._onObjectMatched, this);
-				this.setModel(models.createIntegrationMock(), "mockIntegration");
+				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 				this.setModel(new JSONModel(),"detailModel")
 			},
 			_onObjectMatched: async function (oEvent) {
 				debugger;
 				const sIntegrationId = oEvent.getParameter("arguments").integrationId;
 				await this.setLogsTable(sIntegrationId);
-				const oModel = this.getModel("mockIntegration");
-				const aResults = oModel?.getProperty("/integrationsColl/results") || [];
-				const oIntegration = aResults.find(
-					(item) => item.IntegrationId === sIntegrationId
-				);
-
-				if (!oIntegration) {
-					return;
-				}
-
-				const oJsonContent =
-					oIntegration.jsonContent || oIntegration.json_content || {};
-				const aLogs = oIntegration.logs || [];
-				const sRootKey = mapper.getRootKeyByCode(oIntegration.Code);
-				// const sRootKey1 = mapper.identifyIntegration(oJsonContent);
-
+				const oIntegration = this.getModel("detailModel").getProperty("/logs/0")
+				const sRootKey = mapper.getRootKeyByCode(oIntegration.ID_FLOW);
+				oIntegration.Description = this.oBundle.getText(sRootKey);
 				const oHeaderObj = {
-					IntegrationId: oIntegration.IntegrationId,
-					Code: oIntegration.Code,
+					IntegrationId: oIntegration.ID_INT,
+					Code: oIntegration.ID_FLOW,
 					Description: oIntegration.Description,
-					Status: oIntegration.Status,
-					Message: oIntegration.Message,
-					IntegrationDateTime: oIntegration.IntegrationDateTime,
+					Status: oIntegration.STATUS,
+					IntegrationDate: oIntegration.DATA,
+					IntegrationTime: oIntegration.TIME
 				};
 				const sTitle = sRootKey
 					? this.getResourceBundle().getText(sRootKey) +
 					  "  " +
-					  oIntegration.IntegrationId
-					: oIntegration.IntegrationId;
-
-				const oDetailModel = new JSONModel({
-					title: sTitle,
-					header: oHeaderObj,
-					integration: { ...oHeaderObj },
-					rawJsonContent: oJsonContent,
-					log: aLogs,
-				});
-
-				this.setModel(oDetailModel, "detailModel");
+					  oIntegration.ID_INT
+					: oIntegration.ID_INT;
+				this.getModel("detailModel").setProperty("/title",sTitle);
+				this.getModel("detailModel").setProperty("/header",oHeaderObj);
 				this._renderHeaderContent();
 				this._renderSimpleForm();
 				this._prepareDynamicTableData();
 			},
 			setLogsTable: async function (sIntegrationId) {
-				debugger
 				try {
 					let logs = await API.getEntitySet(this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"), "/GetLogsSet", {
 						filters: [new sap.ui.model.Filter("ID_INT", sap.ui.model.FilterOperator.EQ, sIntegrationId),
-						new sap.ui.model.Filter("DATA", sap.ui.model.FilterOperator.EQ, '20251002'),
-						new sap.ui.model.Filter("TIME", sap.ui.model.FilterOperator.EQ, '094502')
 						],
 						expands: ['Results']
 					});
-					console.log(logs.results)
-					this.getModel("detailModel").setProperty("/logs", logs.results)
-					this.setModel()
+					console.log(logs.results[0].Results.results[0])
+					this.getModel("detailModel").setProperty("/logs", logs.results[0].Results.results)
 				} catch (error) {
 					console.log(error)
 				}
@@ -123,10 +98,11 @@ sap.ui.define(
 				}
 			},
 			_renderSimpleForm: function () {
+				debugger
 				const oDetailModel = this.getModel("detailModel");
 				if (!oDetailModel) return;
 
-				const oIntegration = oDetailModel.getProperty("/integration");
+				const oIntegration = oDetailModel.getProperty("/header");
 				if (!oIntegration) return;
 				debugger;
 
@@ -145,11 +121,11 @@ sap.ui.define(
 						width: "100%",
 						wrap: sap.m.FlexWrap.Wrap,
 					});
-
+					debugger
 					aKeyFields.slice(i, i + nCols).forEach((sKey) => {
 						let v =
 							oIntegration[sKey] ||
-							oDetailModel.getProperty(`/rawJsonContent/${sKey}`) ||
+							oDetailModel.getProperty(`/logs/0/JSONREQUEST/${sKey}`) ||
 							"-";
 						v =
 							typeof v === "string" && /^\d{8}$/.test(v)
@@ -174,10 +150,11 @@ sap.ui.define(
 				}
 			},
 			_prepareDynamicTableData: function () {
+				debugger
 				const oBundle = this.getView().getModel("i18n").getResourceBundle();
 				const oDetailModel = this.getModel("detailModel");
 				if (!oDetailModel) return;
-
+				debugger
 				const oContent = oDetailModel.getProperty("/rawJsonContent") || {};
 				const oTable = this.byId("dynamicTable");
 				if (!oTable) return;

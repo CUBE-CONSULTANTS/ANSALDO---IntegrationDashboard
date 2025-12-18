@@ -1,8 +1,10 @@
+/* eslint-disable no-debugger */
 /* eslint-disable no- */
 sap.ui.define(["../model/formatter"], function (formatter) {
 	"use strict";
 	return {
 		getRootKeyByCode: function (sCode) {
+			debugger
 			const typeByCode = {
 				C001: "CostCenterTS",
 				C002: "wbeMd",
@@ -25,6 +27,30 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 				C019: "massUpdateOfNetwork",
 				C020: "massUpdateOfProductionOrder",
 				C021: "dms",
+				
+				// C001: "Cost Center TS",
+				// C002: "WBE",
+				// C003: "Network",
+				// C004: "Production Order",
+				// C005: "Activity Types",
+				// C006: "Employee TS",
+				// C007: "Employee S/4",
+				// C008: "Employee ADP",
+				// C009: "CostCenter ADP",
+				// C010: "Salary Accounting",
+				// C011: "Tracking Activities",
+				// C012: "primaveraEppm",
+				// C013: "bpcInterface",
+				// C014: "contractData",
+				// C015: "vaultMaterials",
+				// C016: "vaultBoms",
+				// C017: "costCenterMaster",
+				// C018: "productionOrders", ???
+				// C019: "salaryAccounting" ???
+				// C020: "massUpdateOfNetwork",
+				// C021: "massUpdateOfProductionOrder",
+				// C022: "VaultMaterialsClassification",
+				// C023: "Department TS",
 			};
 
 			return typeByCode[sCode] || null;

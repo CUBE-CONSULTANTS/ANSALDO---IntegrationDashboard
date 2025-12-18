@@ -25,10 +25,6 @@ sap.ui.define(
 			formatter: formatter,
 			onInit: async function () {
 				this.setModel(models.createMainModel(), "main");
-				// const oBundle = this.getResourceBundle();
-				// const oModel = models.createIntegrationMock(oBundle);
-				// this.setModel(oModel, "mockIntegration");
-				// const aResults = oModel.getProperty("/integrationsColl/results") || [];
 				this.setModel(new JSONModel(), "integrationsModel");
 				const oFilterModel = models.createFilterModel();
 				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
@@ -258,8 +254,8 @@ sap.ui.define(
 			onTableRowSelectionChange: function (oEvent) {
 				const sIntegrationId = oEvent
 					.getParameters()
-					.listItem.getBindingContext("mockIntegration")
-					.getObject().IntegrationId;
+					.listItem.getBindingContext("integrationsModel")
+					.getObject().ID_INT;
 				this.getRouter().navTo("Detail", {
 					integrationId: sIntegrationId,
 				});

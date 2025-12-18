@@ -15,14 +15,6 @@
 			"version": "1.1.0"
 		},
 		"dataSources": {
-      "ZMAN_PID046_EBOM_SRV": {
-        "uri": "/sap/opu/odata/sap/zman_pid046_ebom_srv",
-        "type": "OData",
-        "settings": {
-          "odataVersion": "2.0",
-          "localUri": "localService/metadata.xml"
-        }
-      },
 			"ZLOG_PID999_INTEGRATION_SRV": {
         "uri": "/sap/opu/odata/sap/ZLOG_PID999_INTEGRATION_SRV",
         "type": "OData",
@@ -63,24 +55,7 @@
 		"handleValidation": true,
 
 		"models": {
-			"i18n": {
-				"type": "sap.ui.model.resource.ResourceModel",
-				"settings": {
-					"bundleName": "integdashboard.i18n.i18n",
-					"supportedLocales": ["en", "de"],
-					"fallbackLocale": "en"
-				}
-			},
-			"ZMAN_PID046_EBOM_SRV": {
-        "dataSource": "ZMAN_PID046_EBOM_SRV",
-        "preload": true,
-        "settings": {
-          "defaultOperationMode": "Server",
-          "useBatch": true,
-          "refreshAfterChange": true
-        }
-      },
-				"ZLOG_PID999_INTEGRATION_SRV": {
+      "ZLOG_PID999_INTEGRATION_SRV": {
         "dataSource": "ZLOG_PID999_INTEGRATION_SRV",
         "preload": true,
         "settings": {
@@ -88,7 +63,15 @@
           "useBatch": true,
           "refreshAfterChange": true
         }
-      }
+      },
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "integdashboard.i18n.i18n",
+					"supportedLocales": ["en", "de"],
+					"fallbackLocale": "en"
+				}
+			}
     },
 		"resources": {
 			"css": [
