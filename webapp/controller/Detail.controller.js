@@ -1,7 +1,6 @@
 /* eslint-disable no-debugger */
 /* eslint-disable no-nested-ternary */
 /* eslint-disable no- */
-/* eslint-disable no- */
 sap.ui.define(
 	[
 		"./BaseController",

@@ -28,6 +28,25 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 
 			return new Date(year, month, day, hours, minutes, seconds);
 		},
+		dateToBackendDate: function (oDate) {
+			if (!(oDate instanceof Date)) return null;
+
+			const y = oDate.getFullYear();
+			const m = String(oDate.getMonth() + 1).padStart(2, "0");
+			const d = String(oDate.getDate()).padStart(2, "0");
+
+			return `${y}${m}${d}`; // YYYYMMDD
+		},
+
+		dateToBackendTime: function (oDate) {
+			if (!(oDate instanceof Date)) return null;
+
+			const h = String(oDate.getHours()).padStart(2, "0");
+			const m = String(oDate.getMinutes()).padStart(2, "0");
+			const s = String(oDate.getSeconds()).padStart(2, "0");
+
+			return `${h}${m}${s}`; // HHmmss
+		},
 		formatDateTime: function (sDate) {
 			if (!sDate) {
 				return "";

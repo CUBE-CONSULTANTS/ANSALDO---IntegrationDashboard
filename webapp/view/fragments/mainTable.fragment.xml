@@ -105,13 +105,13 @@
           <ColumnListItem >
             <cells>
               <Text text="{integrationsModel>ID_INT}" />
-              <Text text="{integrationsModel>description}" />
+              <Text text="{integrationsModel>DESCRIPTION_ID_FLOW}" />
               <Text text="{
                 path: 'integrationsModel>IntegrationDateTime',
                 formatter: '.formatter.formatDateTime'
               }" />
-              <Text text="{integrationsModel>SysA}" />
-              <Text text="{integrationsModel>SysB}" />
+              <Text text="{integrationsModel>SYSTEM_IN}" />
+              <Text text="{integrationsModel>SYSTEM_OUT}" />
               <ObjectStatus
                 text="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : 'Error' }"
                 state="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : (${integrationsModel>STATUS} === 'E' ? 'Error' : 'None') }"
