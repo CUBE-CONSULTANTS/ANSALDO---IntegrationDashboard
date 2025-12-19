@@ -113,8 +113,8 @@
               <Text text="{integrationsModel>SYSTEM_IN}" />
               <Text text="{integrationsModel>SYSTEM_OUT}" />
               <ObjectStatus
-                text="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : 'Error' }"
-                state="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : (${integrationsModel>STATUS} === 'E' ? 'Error' : 'None') }"
+                text="{integrationsModel>statusText}"
+                state="{integrationsModel>color}"
               />
               <Text text="{integrationsModel>JSONRESPONSE}" />
             </cells>
