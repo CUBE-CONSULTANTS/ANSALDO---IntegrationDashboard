@@ -107,7 +107,7 @@
                             <m:items>
                                 <m:ColumnListItem>
                                     <m:cells>
-                                        <m:Text text="{detailModel>TIME}" />
+                                        <m:Text text="{path:'detailModel>TIME', formatter: '.formatter.formatJsonTime'}" />
                                         <m:Text text="{detailModel>STATUS}" />
                                         <m:Text text="{detailModel>JSONRESPONSE}" />
                                     </m:cells>

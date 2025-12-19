@@ -4,7 +4,6 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 	"use strict";
 	return {
 		getRootKeyByCode: function (sCode) {
-			debugger
 			const typeByCode = {
 				C001: "CostCenterTS",
 				C002: "wbeMd",
@@ -27,7 +26,7 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 				C019: "massUpdateOfNetwork",
 				C020: "massUpdateOfProductionOrder",
 				C021: "dms",
-				
+
 				// C001: "Cost Center TS",
 				// C002: "WBE",
 				// C003: "Network",
@@ -105,7 +104,7 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 					source: "SAP S/4 Hana",
 					target: "Oracle Primavera",
 				},
-				C013: { source: "", target: ""}, 	//   "BPC Interface"
+				C013: { source: "", target: "" }, //   "BPC Interface"
 				C014: {
 					source: "SAP S/4 Hana",
 					target: "Autodesk Vault",
@@ -138,304 +137,123 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 					source: "Autodesk Vault",
 					target: "SAP S/4 Hana",
 				},
-
 			};
 			const entry = integrationMap[code];
 			return entry
 				? { SysA: entry.source, SysB: entry.target }
-				: { SysA: "", SysB: ""};
+				: { SysA: "", SysB: "" };
 		},
-		//se senza chiavi di riconoscimento integration:
-		identifyIntegration: function (jsonContent) {
-			const fieldMapping = {
-				activityTypes: ["LSTAR", "KTEXT", "DATBI", "DATAB", "OPERA"],
-				employeesS4: [
-					"USRID",
-					"HIRE_DATE",
-					"BUKRS",
-					"WERKS",
-					"KOSTL",
-					"PERSG",
-					"PERSK",
-					"BTRTL",
-					"ANRED",
-					"VORNA",
-					"NACHN",
-					"GBDAT",
-					"GBORT",
-					"NATIO",
-					"GESCH",
-					"SPRSL",
-					"USRID",
-					"USRID",
-					"USRID",
-					"LSTAR",
-					"ICNUM",
-				],
-				employeesTS: [
-					"person-id-external",
-					"first-name",
-					"last-name",
-					"title",
-					"date-of-birth",
-					"gender",
-					"status",
-					"email-address",
-					"companyEntryDate",
-					"manager-ID",
-					"hireDate",
-					"terminationDate",
-					"employment-type",
-					"is-fulltime-employee",
-					"employee-class",
-					"overtime-payed",
-					"fte",
-					"department",
-					"legal-entity",
-					"Phone Number",
-					"location",
-					"cost-center",
-					"standard-hours",
-					"job-code",
-					"OPERA",
-				],
-				costCentersADP: ["code", "name", "DATBI", "DATAB", "inactiveIndicator"],
-				orderHeaders: ["AUFNR", "KTEXT", "PSPNR", "GSTRP", "GLTRP", "OPERA"],
-				network: [
-					"AUFNR",
-					"VORNR",
-					"LTXA1",
-					"NTANF",
-					"NTEND",
-					"VSTTXT",
-					"OPERA",
-				],
-				wbeElements: [
-					"PSPNR",
-					"POSID",
-					"POST1",
-					"PSTRT",
-					"PENDE",
-					"STTXT_EXT",
-					"OPERA",
-				],
-				costCenters: ["KOSTL", "BUKRS", "LTEXT", "DATBI", "DATAB", "OPERA"],
-				businessPartners: ["BP_ID", "NAME", "ADDRESS", "PHONE", "EMAIL"],
-				dms: ["DOCUMENT_ID", "FILE_NAME", "CREATED_DATE", "MODIFIED_DATE"],
-				expenseIn: ["EXPENSE_ID", "AMOUNT", "CATEGORY", "DATE"],
-				primaveraEppm: [
-					"PROJECT_ID",
-					"PHASE",
-					"TASK",
-					"START_DATE",
-					"END_DATE",
-				],
-				bpcInterface: ["INTERFACE_ID", "STATUS", "DATA", "TYPE"],
-				contractData: ["CONTRACT_ID", "PARTNER_ID", "START_DATE", "END_DATE"],
-				vaultBoms: ["BOM_ID", "ITEM", "QUANTITY", "DESCRIPTION"],
-				vaultMaterials: ["MATERIAL_ID", "NAME", "QUANTITY", "UNIT"],
-				costCenterMaster: ["KOSTL", "NAME", "DATBI", "DATAB", "OPERA"],
-				wbeMaster: ["PSPNR", "NAME", "DESCRIPTION", "STATUS"],
-				networkMaster: ["AUFNR", "NAME", "STATUS", "DESCRIPTION"],
-				productionOrders: [
-					"AUFNR",
-					"KTEXT",
-					"AUART",
-					"STTXT",
-					"WERKS",
-					"PLNBEZ",
-					"GAMNG",
-					"GWEMG",
-					"GSTRP",
-					"GLTRP",
-					"OPERA",
-				],
-				salaryAccounting: [
-					"PAYRUN",
-					"COMPANY",
-					"PAYGROUP",
-					"COSTCENTREDESC",
-					"SECTION",
-					"DESCRIPTION",
-					"AMOUNT",
-					"PAYPERIODEND",
-					"PAYCHECKDATE",
-					"TAXPERIOD",
-					"TAXYEAR",
-				],
-				trackingActivitiesImport: [
-					"ID-TRACK",
-					"PERSON-ID",
-					"ACDTE",
-					"PSPNR",
-					"HH-WBE",
-					"AUFNR",
-					"VORNR",
-					"HH-NETWORK",
-					"AUFNR",
-					"VORNR",
-					"HH-LABOUR",
-					"HH-SET-UP",
-					"HH-MACHINE",
-					"PERC",
-					"OPERA",
-				],
-				trackingActivitiesExport: ["STATUS", "NR-DOCUMENT", "MSG_TEXT"],
-				trackingCancellationImport: ["NR-DOCUMENT"],
-				trackingCancellationExport: ["STATUS", "MSG_TEXT"],
-				massiveReversalImport: [
-					"ID-TRACK",
-					"PERSON-ID",
-					"ACDTE",
-					"AUFNR_SEND",
-					"VORNR_SEND",
-					"HH-NETWORK",
-					"AUFNR_TARG",
-					"VORNR_TARG",
-					"AUFNR_SEND",
-					"VORNR_SEND",
-					"HH-LABOUR",
-					"HH-SET-UP",
-					"HH-MACHINE",
-					"PERC",
-					"AUFNR_TARG",
-					"VORNR_TARG",
-					"TEXT",
-				],
-				massiveReversalExport: ["STATUS", "NR-DOCUMENT", "MSG_TEXT"],
-			};
-			for (const [integrationType, fields] of Object.entries(fieldMapping)) {
-				const isMatching = fields.every((field) => field in jsonContent);
-				if (isMatching) {
-					return integrationType;
-				}
-			}
-			return "Unknown";
-		},
+		
+		getKeyFieldsByCode: function (sCode, oRawContent) {
+      if (!oRawContent) return [];
+      const aFlat = this.flattenData(oRawContent);
+      const oSample = aFlat[0] || {};
+      return Object.keys(oSample).slice(0, 6);
+    },
+		flattenData: function (oData) {
+      if (!oData) return [];
+      let vTarget = oData;
+      const aRootKeys = Object.keys(oData);
+      if (aRootKeys.length === 1 && typeof oData[aRootKeys[0]] === "object") {
+        vTarget = oData[aRootKeys[0]];
+      }
 
-		getKeyFieldsByCode: function (sCode) {
-			const mappingByCode = {
-				C001: ["KOSTL", "KTEXT", "BUKRS"], // Cost Center TS
-				C002: ["PSPNR", "POSID", "POST1"], // WBE
-				C003: ["AUFNR", "KTEXT"], // Network
-				C004: ["AUFNR", "KTEXT", "AUART", "WERKS", "PLNBEZ"], // Production Order
-				C005: ["LSTAR", "KTEXT"], // Activity Types
-				C006: [
-					"USRID",
-					"VORNA",
-					"NACHN",
-					"EMAIL",
-					"HIRE_DATE",
-					"BUKRS",
-					"WERKS",
-					"KOSTL",
-					"PERSG",
-					"PERSK",
-				], // Employee TS
-				C007: [
-					"USRID",
-					"VORNA",
-					"NACHN",
-					"EMAIL",
-					"HIRE_DATE",
-					"BUKRS",
-					"WERKS",
-					"KOSTL",
-					"PERSG",
-					"PERSK",
-				], // Employee S/4
-				C008: ["PSPNR", "POSID", "POST1"], // Some other integration
-				C009: ["KOSTL", "BUKRS", "LTEXT"], // Cost Center ADP
-				C010: ["AUFNR", "KTEXT"], // Salary Accounting
-				C011: [
-					"USRID",
-					"VORNA",
-					"NACHN",
-					"EMAIL",
-					"HIRE_DATE",
-					"BUKRS",
-					"WERKS",
-					"KOSTL",
-					"PERSG",
-					"PERSK",
-				], // Tracking Activities
-				C012: ["PROJECT_ID", "PHASE", "TASK", "START_DATE", "END_DATE"], // primaveraEppm
-				C013: ["INTERFACE_ID", "STATUS", "DATA", "TYPE"], // bpcInterface
-				C014: ["CONTRACT_ID", "PARTNER_ID", "START_DATE", "END_DATE"], // contractData
-				C015: [
-					"Product",
-					"ProductType",
-					"GrossWeight",
-					"NetWeight",
-					"CountryOfOrigin",
-					"Division",
-				], // vaultBoms
-				C016: ["MATERIAL_ID", "NAME", "QUANTITY", "UNIT"], // vaultMaterials
-				C017: ["KOSTL", "NAME", "DATBI", "DATAB", "OPERA"], // costCenterMaster
-				C018: [
-					"AUFNR",
-					"KTEXT",
-					"AUART",
-					"WERKS",
-					"PLNBEZ",
-					"GAMNG",
-					"GWEMG",
-					"GSTRP",
-					"GLTRP",
-					"OPERA",
-				], // productionOrders
-				C019: [
-					"PAYRUN",
-					"COMPANY",
-					"PAYGROUP",
-					"COSTCENTREDESC",
-					"SECTION",
-					"DESCRIPTION",
-					"AMOUNT",
-					"PAYPERIODEND",
-					"PAYCHECKDATE",
-					"TAXPERIOD",
-					"TAXYEAR",
-				], // salaryAccounting
-				C020: ["AUFNR", "VORNR", "LTXA1", "NTANF", "NTEND", "VSTTXT", "OPERA"], // massUpdateOfNetwork
-				C021: ["AUFNR", "VORNR", "LTXA1", "NTANF", "NTEND", "VSTTXT", "OPERA"], // massUpdateOfProductionOrder
-			};
+      const aItems = Array.isArray(vTarget) ? vTarget : [vTarget];
 
-			return mappingByCode[sCode] || [];
-		},
-		getColumnConfig: function (oHeader, oBundle, oTable) {
-			if (!oHeader) return [];
-			let aKeys = Object.keys(oHeader).filter(
-				(k) => !Array.isArray(oHeader[k])
-			);
+      const fnFlattenRow = (oObj, sPrefix = "") => {
+        const oFlatRow = {};
+        for (const sKey in oObj) {
+          if (!oObj.hasOwnProperty(sKey)) continue;
 
-			Object.keys(oHeader).forEach((k) => {
-				if (Array.isArray(oHeader[k]) && oHeader[k].length > 0) {
-					const childKeys = Object.keys(oHeader[k][0]);
-					aKeys = aKeys.concat(childKeys.filter((ck) => !aKeys.includes(ck)));
-				}
-			});
+          const sPropName = sPrefix ? sPrefix + "_" + sKey : sKey;
+          const vValue = oObj[sKey];
 
-			return aKeys.map(function (sKey, index) {
-				const sTitle = oBundle.hasText(sKey) ? oBundle.getText(sKey) : sKey;
-				const bIsLast = index === aKeys.length - 1;
+          if (vValue !== null && typeof vValue === "object") {
+            if (Array.isArray(vValue)) {
+              if (vValue.length > 0 && typeof vValue[0] === "object") {
+                Object.assign(oFlatRow, fnFlattenRow(vValue[0], sPropName));
+              } else {
+                oFlatRow[sPropName] = vValue.join(", ");
+              }
+            } else {
+              Object.assign(oFlatRow, fnFlattenRow(vValue, sPropName));
+            }
+          } else {
+            oFlatRow[sPropName] = vValue;
+          }
+        }
+        return oFlatRow;
+      };
 
-				const oColumn = new sap.ui.table.Column({
-					label: new sap.m.Label({ text: sTitle }),
-					template: new sap.m.Text({ text: `{detailModel>${sKey}}` }),
-					sortProperty: sKey,
-					filterProperty: sKey,
-					width: bIsLast ? undefined : "12rem",
-					autoResizable: bIsLast,
-				});
+      return aItems.map((item) => fnFlattenRow(item));
+    },
+		// getColumnConfig: function (oDataSample, oBundle) {
+		// 	if (!oDataSample) return [];
 
-				if (bIsLast) {
-					oColumn.setMinWidth(160);
-				}
+		// 	let aKeys = Object.keys(oDataSample).filter(
+		// 		(k) => typeof oDataSample[k] !== "object"
+		// 	);
 
-				return oColumn;
-			});
-		},
+		// 	Object.keys(oDataSample).forEach((k) => {
+		// 		if (Array.isArray(oDataSample[k]) && oDataSample[k].length > 0) {
+		// 			const aChildKeys = Object.keys(oDataSample[k][0]);
+		// 			aChildKeys.forEach((ck) => {
+		// 				if (!aKeys.includes(ck)) aKeys.push(ck);
+		// 			});
+		// 		}
+		// 	});
+
+		// 	return aKeys.map((sKey) => {
+		// 		const sTitle = oBundle.hasText(sKey) ? oBundle.getText(sKey) : sKey;
+
+		// 		return new sap.ui.table.Column({
+		// 			label: new sap.m.Label({ text: sTitle }),
+		// 			template: new sap.m.Text({
+		// 				text: "{detailModel>" + sKey + "}",
+		// 				wrapping: false,
+		// 			}),
+		// 			sortProperty: sKey,
+		// 			filterProperty: sKey,
+		// 			width: "12rem",
+		// 		});
+		// 	});
+		// },
+
+
+
+		// getColumnConfig2: function (oHeader, oBundle, oTable) {
+		// 	if (!oHeader) return [];
+		// 	let aKeys = Object.keys(oHeader).filter(
+		// 		(k) => !Array.isArray(oHeader[k])
+		// 	);
+
+		// 	Object.keys(oHeader).forEach((k) => {
+		// 		if (Array.isArray(oHeader[k]) && oHeader[k].length > 0) {
+		// 			const childKeys = Object.keys(oHeader[k][0]);
+		// 			aKeys = aKeys.concat(childKeys.filter((ck) => !aKeys.includes(ck)));
+		// 		}
+		// 	});
+
+		// 	return aKeys.map(function (sKey, index) {
+		// 		const sTitle = oBundle.hasText(sKey) ? oBundle.getText(sKey) : sKey;
+		// 		const bIsLast = index === aKeys.length - 1;
+
+		// 		const oColumn = new sap.ui.table.Column({
+		// 			label: new sap.m.Label({ text: sTitle }),
+		// 			template: new sap.m.Text({ text: `{detailModel>${sKey}}` }),
+		// 			sortProperty: sKey,
+		// 			filterProperty: sKey,
+		// 			width: bIsLast ? undefined : "12rem",
+		// 			autoResizable: bIsLast,
+		// 		});
+
+		// 		if (bIsLast) {
+		// 			oColumn.setMinWidth(160);
+		// 		}
+
+		// 		return oColumn;
+		// 	});
+		// },
 
 		// getColumnConfig: function (oHeader, oBundle) {
 		// 	if (!oHeader) return [];

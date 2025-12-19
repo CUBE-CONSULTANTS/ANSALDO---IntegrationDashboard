@@ -1,5 +1,5 @@
+/* eslint-disable no-debugger */
 /* eslint-disable no-nested-ternary */
-/* eslint-disable no- */
 sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 	"use strict";
 
@@ -54,6 +54,18 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 					sValue.slice(4, 6) +
 					"/" +
 					sValue.slice(0, 4)
+				);
+			}
+			return sValue;
+		},
+		formatJsonTime: function (sValue) {
+			if (typeof sValue === "string" && /^\d{6}$/.test(sValue)) {
+				return (
+					sValue.slice(0, 2) +
+					":" +
+					sValue.slice(2, 4) +
+					":" +
+					sValue.slice(4, 6)
 				);
 			}
 			return sValue;

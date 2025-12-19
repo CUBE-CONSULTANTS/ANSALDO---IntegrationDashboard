@@ -10,24 +10,22 @@ sap.ui.define(
 		"../model/mapper",
 		"../model/API",
 		"sap/ui/model/json/JSONModel",
+		"sap/m/MessageBox",
 	],
-	function (BaseController, models, formatter, mapper,API, JSONModel) {
+	function (BaseController, models, formatter, mapper, API, JSONModel, MessageBox) {
 		"use strict";
 
 		return BaseController.extend("integdashboard.controller.Detail", {
 			formatter: formatter,
 			onInit: function () {
-				this.getRouter()
-					.getRoute("Detail")
-					.attachPatternMatched(this._onObjectMatched, this);
+				this.getRouter().getRoute("Detail").attachPatternMatched(this._onObjectMatched, this);
 				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-				this.setModel(new JSONModel(),"detailModel")
+				this.setModel(new JSONModel(), "detailModel");
 			},
 			_onObjectMatched: async function (oEvent) {
-				debugger;
 				const sIntegrationId = oEvent.getParameter("arguments").integrationId;
 				await this.setLogsTable(sIntegrationId);
-				const oIntegration = this.getModel("detailModel").getProperty("/logs/0")
+				const oIntegration = this.getModel("detailModel").getProperty("/logs/0");
 				const sRootKey = mapper.getRootKeyByCode(oIntegration.ID_FLOW);
 				oIntegration.Description = this.oBundle.getText(sRootKey);
 				const oHeaderObj = {
@@ -36,31 +34,95 @@ sap.ui.define(
 					Description: oIntegration.Description,
 					Status: oIntegration.STATUS,
 					IntegrationDate: oIntegration.DATA,
-					IntegrationTime: oIntegration.TIME
+					IntegrationTime: oIntegration.TIME,
 				};
 				const sTitle = sRootKey
-					? this.getResourceBundle().getText(sRootKey) +
+					? this.oBundle.getText(sRootKey) +
 					  "  " +
 					  oIntegration.ID_INT
 					: oIntegration.ID_INT;
-				this.getModel("detailModel").setProperty("/title",sTitle);
-				this.getModel("detailModel").setProperty("/header",oHeaderObj);
+				this.getModel("detailModel").setProperty("/title", sTitle);
+				this.getModel("detailModel").setProperty("/header", oHeaderObj);
 				this._renderHeaderContent();
 				this._renderSimpleForm();
 				this._prepareDynamicTableData();
 			},
 			setLogsTable: async function (sIntegrationId) {
+				this.showBusy(0)
 				try {
-					let logs = await API.getEntitySet(this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"), "/GetLogsSet", {
-						filters: [new sap.ui.model.Filter("ID_INT", sap.ui.model.FilterOperator.EQ, sIntegrationId),
-						],
-						expands: ['Results']
-					});
-					console.log(logs.results[0].Results.results[0])
-					this.getModel("detailModel").setProperty("/logs", logs.results[0].Results.results)
+					const logs = await API.getEntitySet(
+						this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"),
+						"/GetLogsSet",
+						{
+							filters: [
+								new sap.ui.model.Filter(
+									"ID_INT",
+									sap.ui.model.FilterOperator.EQ,
+									sIntegrationId
+								),
+							],
+							expands: ["Results"],
+						}
+					);
+					const oLogEntry = logs.results[0]?.Results?.results[0];
+					if (!oLogEntry) return;
+					const sRawData = oLogEntry.JSONREQUEST || "";
+					let oParsedData;
+
+					if (sRawData.trim().startsWith("<")) {
+						oParsedData = this._parseXmlToJson(sRawData);
+					} else {
+						try {
+							oParsedData = JSON.parse(sRawData || "{}");
+						} catch (e) {
+							oParsedData = { Error: "Invalid Format", RawContent: sRawData };
+						}
+					}
+
+					this.getModel("detailModel").setProperty(
+						"/logs",
+						logs.results[0].Results.results
+					);
+
+					this.getModel("detailModel").setProperty(
+						"/rawJsonContent",
+						oParsedData
+					);
 				} catch (error) {
-					console.log(error)
+					MessageBox.error(this.oBundle.getText("dataError"), error);
+				} finally {
+					this.hideBusy(0)
 				}
+			},
+			_parseXmlToJson: function (sXml) {
+				const oParser = new DOMParser();
+				const oXmlDoc = oParser.parseFromString(sXml, "text/xml");
+				const fParseNode = (oNode) => {
+					const oObj = {};
+					if (oNode.nodeType === 1) {
+						if (oNode.hasChildNodes()) {
+							for (let i = 0; i < oNode.childNodes.length; i++) {
+								const oChild = oNode.childNodes.item(i);
+								if (oChild.nodeName === "#text") {
+									const sText = oChild.nodeValue.trim();
+									if (sText) return sText;
+								} else {
+									const sName = oChild.nodeName;
+									const vValue = fParseNode(oChild);
+									if (oObj[sName]) {
+										if (!Array.isArray(oObj[sName]))
+											oObj[sName] = [oObj[sName]];
+										oObj[sName].push(vValue);
+									} else {
+										oObj[sName] = vValue;
+									}
+								}
+							}
+						}
+					}
+					return oObj;
+				};
+				return fParseNode(oXmlDoc.documentElement);
 			},
 			_renderHeaderContent: function () {
 				const oDetailModel = this.getModel("detailModel");
@@ -75,7 +137,6 @@ sap.ui.define(
 				if (!oHBox) return;
 				oHBox.destroyItems();
 
-				const oBundle = this.getResourceBundle();
 				const aKeys = Object.keys(oHeader);
 				const nGroupSize = 3;
 				for (let i = 0; i < aKeys.length; i += nGroupSize) {
@@ -83,8 +144,11 @@ sap.ui.define(
 
 					aKeys.slice(i, i + nGroupSize).forEach((sKey) => {
 						let v = oHeader[sKey];
+						if (sKey === "IntegrationDate")
 						v = formatter.formatJsonDate(formatter.formatJsonValue(v));
-						const sTitle = oBundle.hasText(sKey) ? oBundle.getText(sKey) : sKey;
+						if (sKey === "IntegrationTime")
+						v = formatter.formatJsonTime(formatter.formatJsonValue(v));
+						const sTitle = this.oBundle.hasText(sKey) ? this.oBundle.getText(sKey) : sKey;
 
 						oVBox.addItem(
 							new sap.m.ObjectAttribute({
@@ -98,101 +162,78 @@ sap.ui.define(
 				}
 			},
 			_renderSimpleForm: function () {
-				debugger
-				const oDetailModel = this.getModel("detailModel");
-				if (!oDetailModel) return;
+        const oDetailModel = this.getModel("detailModel");
+        const oRawContent = oDetailModel.getProperty("/rawJsonContent");
+        const oHeader = oDetailModel.getProperty("/header");
+        const oSimpleForm = this.byId("overviewForm");
+        
+        if (!oSimpleForm || !oRawContent) return;
+        oSimpleForm.destroyContent();
+        const aFlatData = mapper.flattenData(oRawContent);
+        const oFirstRecord = aFlatData[0] || {};
+        const aKeyFields = mapper.getKeyFieldsByCode(oHeader.Code, oRawContent);
 
-				const oIntegration = oDetailModel.getProperty("/header");
-				if (!oIntegration) return;
-				debugger;
+        const nCols = 3;
+        for (let i = 0; i < aKeyFields.length; i += nCols) {
+          const oHBox = new sap.m.HBox({
+            width: "100%",
+            wrap: "Wrap"
+          }).addStyleClass("sapUiSmallMarginBottom");
 
-				const aKeyFields = mapper.getKeyFieldsByCode(oIntegration.Code);
+          aKeyFields.slice(i, i + nCols).forEach((sKey) => {
+            let v = oFirstRecord[sKey] || "-";
+						if (sKey.includes('date') || sKey.includes('Date'))	
+            v = (typeof v === "string" && /^\d{8}$/.test(v)) ? formatter.formatJsonDate(v) : v;
 
-				const oSimpleForm = this.byId("overviewForm");
-				if (!oSimpleForm) return;
-
-				oSimpleForm.destroyContent();
-
-				const oBundle = this.getResourceBundle();
-				const nCols = 3;
-				for (let i = 0; i < aKeyFields.length; i += nCols) {
-					const oHBox = new sap.m.HBox({
-						justifyContent: "Start",
-						width: "100%",
-						wrap: sap.m.FlexWrap.Wrap,
-					});
-					debugger
-					aKeyFields.slice(i, i + nCols).forEach((sKey) => {
-						let v =
-							oIntegration[sKey] ||
-							oDetailModel.getProperty(`/logs/0/JSONREQUEST/${sKey}`) ||
-							"-";
-						v =
-							typeof v === "string" && /^\d{8}$/.test(v)
-								? formatter.formatJsonDate(v)
-								: v;
-
-						const oVBox = new sap.m.VBox({
-							items: [
-								new sap.m.Label({
-									text: oBundle.hasText(sKey) ? oBundle.getText(sKey) : sKey,
-								}),
-								new sap.m.Text({ text: v }),
-							],
-							width: "33%",
-							renderType: "Bare",
-						});
-
-						oHBox.addItem(oVBox);
-					});
-
-					oSimpleForm.addContent(oHBox);
-				}
-			},
+            oHBox.addItem(new sap.m.VBox({
+              width: "33%",
+              items: [
+                new sap.m.Label({ 
+                    text: this.oBundle.hasText(sKey) ? this.oBundle.getText(sKey) : sKey.split("_").pop(), 
+                    design: "Bold" 
+                }),
+                new sap.m.Text({ text: v })
+              ]
+            }));
+          });
+          oSimpleForm.addContent(oHBox);
+        }
+      },
+			
 			_prepareDynamicTableData: function () {
-				debugger
-				const oBundle = this.getView().getModel("i18n").getResourceBundle();
-				const oDetailModel = this.getModel("detailModel");
-				if (!oDetailModel) return;
-				debugger
-				const oContent = oDetailModel.getProperty("/rawJsonContent") || {};
-				const oTable = this.byId("dynamicTable");
-				if (!oTable) return;
+            const oDetailModel = this.getModel("detailModel");
+            const oRawContent = oDetailModel.getProperty("/rawJsonContent");
+            const oTable = this.byId("dynamicTable");
+            
+            if (!oTable || !oRawContent) return;
+            const aFlatData = mapper.flattenData(oRawContent);
+            const aUniqueKeys = [...new Set(aFlatData.flatMap(Object.keys))];
 
-				const formatNode = (node) => {
-					const newNode = {};
-					Object.keys(node).forEach((k) => {
-						if (Array.isArray(node[k])) {
-							newNode[k] = node[k].map((child) => formatNode(child));
-						} else {
-							newNode[k] =
-								formatter.formatJsonDate(formatter.formatJsonValue(node[k])) ||
-								"-";
-						}
-					});
-					return newNode;
-				};
+            oTable.destroyColumns();
+            aUniqueKeys.forEach(sKey => {
+                const sLabelText = this.oBundle.hasText(sKey) 
+                    ? this.oBundle.getText(sKey) 
+                    : sKey.split("_").pop();
 
-				const aTreeData = [formatNode(oContent)];
-				const aColumns = mapper.getColumnConfig(oContent, oBundle);
+                oTable.addColumn(new sap.ui.table.Column({
+                    label: new sap.m.Label({ text: sLabelText, tooltip: sKey }),
+                    template: new sap.m.Text({ 
+                        text: {
+                            path: "detailModel>" + sKey,
+                            formatter: formatter.formatJsonValue 
+                        },
+                        wrapping: false 
+                    }),
+                    sortProperty: sKey,
+                    filterProperty: sKey,
+                    width: "15rem"
+                }));
+            });
 
-				oTable.destroyColumns();
-				aColumns.forEach((col) => oTable.addColumn(col));
-
-				oDetailModel.setProperty("/dynamicTree", aTreeData);
-				oTable.setModel(oDetailModel);
-				const arrayNames = Object.keys(oContent).filter((k) =>
-					Array.isArray(oContent[k])
-				);
-
-				oTable.bindRows({
-					path: "detailModel>/dynamicTree",
-					parameters: {
-						arrayNames: arrayNames,
-					},
-					templateShareable: true,
-				});
-			},
+            oDetailModel.setProperty("/dynamicFlatData", aFlatData);
+            oTable.bindRows("detailModel>/dynamicFlatData");
+        },
+			
 			onViewSettOpen: function () {
 				const oVSD = this.onOpenDialog(
 					"settDialog",
@@ -204,39 +245,39 @@ sap.ui.define(
 				const aFields = [
 					{
 						key: "AUFNR",
-						label: this.getResourceBundle().getText("network"),
+						label: this.oBundle.getText("network"),
 					},
 					{
 						key: "VORNR",
-						label: this.getResourceBundle().getText("opNumb"),
+						label: this.oBundle.getText("opNumb"),
 					},
 					{
 						key: "AUTHMOD",
-						label: this.getResourceBundle().getText("autoreMod"),
+						label: this.oBundle.getText("autoreMod"),
 					},
 					{
 						key: "MODDATE",
-						label: this.getResourceBundle().getText("dataMod"),
+						label: this.oBundle.getText("dataMod"),
 					},
 					{
 						key: "MODTIME",
-						label: this.getResourceBundle().getText("oraMod"),
+						label: this.oBundle.getText("oraMod"),
 					},
 					{
 						key: "MODOBJ",
-						label: this.getResourceBundle().getText("oggMod"),
+						label: this.oBundle.getText("oggMod"),
 					},
 					{
 						key: "OLDVAL",
-						label: this.getResourceBundle().getText("oldV"),
+						label: this.oBundle.getText("oldV"),
 					},
 					{
 						key: "NEWVAL",
-						label: this.getResourceBundle().getText("newV"),
+						label: this.oBundle.getText("newV"),
 					},
 					{
 						key: "STATUS",
-						label: this.getResourceBundle().getText("status"),
+						label: this.oBundle.getText("status"),
 					},
 				];
 
