@@ -1,110 +1,109 @@
-.prova{
-  background: red!important;
-  width: 250px;
-}
 .objAtStyle{
   font-weight: bold;
 }
-.group-code-C001 .sapMLIBContent:first-child {
+.group-code-C001 .sapMGHLICell {
     background-color: #c5a4a4 !important;
-    border-left: 4px solid #5e0202 !important;
+    border-left: 8px solid #5e0202 !important;
 }
-.group-code-C002 .sapMLIBContent:first-child {
+.group-code-C002 .sapMGHLICell {
     background-color: #ccffcc !important;
-    border-left: 4px solid #006600 !important;
+    border-left: 8px solid #006600 !important;
 }
 
-.group-code-C003 .sapMLIBContent:first-child {
+.group-code-C003 .sapMGHLICell {
     background-color: #ccccff !important;
-     border-left: 4px solid  #000080 !important;
+     border-left: 8px solid  #000080 !important;
 }
 
-.group-code-C004 .sapMLIBContent:first-child {
+.group-code-C004 .sapMGHLICell {
   background-color: #fff3e0 !important; /* Arancione chiaro */
-  border-left: 4px solid #ff9800 !important;
+  border-left: 8px solid #ff9800 !important;
 }
 
-.group-code-C005 .sapMLIBContent:first-child {
+.group-code-C005 .sapMGHLICell {
   background-color: #fce4ec !important; /* Rosa chiaro */
-  border-left: 4px solid #e91e63 !important;
+  border-left: 8px solid #e91e63 !important;
 }
 
-.group-code-C006 .sapMLIBContent:first-child {
+.group-code-C006 .sapMGHLICell {
   background-color: #e0f2f1 !important; /* Teal chiaro */
-  border-left: 4px solid #009688 !important;
+  border-left: 8px solid #009688 !important;
 }
 
-.group-code-C007 .sapMLIBContent:first-child{
+.group-code-C007 .sapMGHLICell{
   background-color: #ffebee !important; /* Rosso chiaro */
-  border-left: 4px solid #f44336 !important;
+  border-left: 8px solid #f44336 !important;
 }
 
-.group-code-C008 .sapMLIBContent:first-child {
+.group-code-C008 .sapMGHLICell {
   background-color: #e8eaf6 !important; /* Indigo chiaro */
-  border-left: 4px solid #3f51b5 !important;
+  border-left: 8px solid #3f51b5 !important;
 }
 
-.group-code-C009 .sapMLIBContent:first-child {
+.group-code-C009 .sapMGHLICell {
   background-color: #f9fbe7 !important; /* Verde lime chiaro */
-  border-left: 4px solid #8bc34a !important;
+  border-left: 8px solid #8bc34a !important;
 }
 
-.group-code-C010 .sapMLIBContent:first-child {
+.group-code-C010 .sapMGHLICell {
   background-color: #fff8e1 !important; /* Giallo chiaro */
-  border-left: 4px solid #ffc107 !important;
+  border-left: 8px solid #ffc107 !important;
 }
 
-.group-code-C011 .sapMLIBContent:first-child{
+.group-code-C011 .sapMGHLICell{
   background-color: #fdf2e9 !important; /* Marrone chiaro */
-  border-left: 4px solid #795548 !important;
+  border-left: 8px solid #795548 !important;
 }
-.group-code-C012 .sapMLIBContent:first-child {
+.group-code-C012 .sapMGHLICell {
   background-color: #f1f8e9 !important; /* Verde oliva chiaro */
-  border-left: 4px solid #689f38 !important;
+  border-left: 8px solid #689f38 !important;
 }
 
-.group-code-C013 .sapMLIBContent:first-child {
-  background-color: #e0f7fa !important; /* Ciano chiaro */
-  border-left: 4px solid #00bcd4 !important;
-}
-
-.group-code-C014 .sapMLIBContent:first-child {
+.group-code-C014 .sapMGHLICell {
   background-color: #ede7f6 !important; /* Viola profondo chiaro */
-  border-left: 4px solid #673ab7 !important;
+  border-left: 8px solid #673ab7 !important;
 }
 
-.group-code-C015 .sapMLIBContent:first-child {
+.group-code-C015 .sapMGHLICell {
   background-color: #fff9c4 !important; /* Giallo lime chiaro */
-  border-left: 4px solid #cddc39 !important;
+  border-left: 8px solid #cddc39 !important;
 }
 
-.group-code-C016 .sapMLIBContent:first-child {
+.group-code-C016 .sapMGHLICell {
   background-color: #f3e0dc !important; /* Arancione profondo chiaro */
-  border-left: 4px solid #ff5722 !important;
+  border-left: 8px solid #ff5722 !important;
 }
 
-.group-code-C017 .sapMLIBContent:first-child {
-  background-color: #e8f4f8 !important; /* Blu grigio chiaro */
-  border-left: 4px solid #607d8b !important;
-}
-
-.group-code-C018 .sapMLIBContent:first-child {
-  background-color: #fce4e4 !important; /* Rosa profondo chiaro */
-  border-left: 4px solid #e57373 !important;
-}
-
-.group-code-C019 .sapMLIBContent:first-child {
-  background-color: #e4f3e0 !important; /* Verde scuro chiaro */
-  border-left: 4px solid #66bb6a !important;
-}
-
-.group-code-C020 .sapMLIBContent:first-child {
+.group-code-C020 .sapMGHLICell {
   background-color: #f0f4c3 !important; /* Verde giallo chiaro */
-  border-left: 4px solid #9ccc65 !important;
+  border-left: 8px solid #9ccc65 !important;
 }
 
-.group-code-C021 .sapMLIBContent:first-child {
+.group-code-C021 .sapMGHLICell {
   background-color: #ffe0b2 !important; /* Ambra chiaro */
-  border-left: 4px solid #ffb74d !important;
+  border-left: 8px solid #ffb74d !important;
 }
 
+.group-code-C022 .sapMGHLICell {
+  background-color: #e0f7fa !important; /* Ciano chiaro */
+  border-left: 8px solid #00bcd4 !important;
+}
+.group-code-C023 .sapMGHLICell {
+  background-color: #e8f4f8 !important; /* Blu grigio chiaro */
+  border-left: 8px solid #607d8b !important;
+}
+
+.group-code-C024 .sapMGHLICell {
+  background-color: #fce4e4 !important; /* Rosa profondo chiaro */
+  border-left: 8px solid #e57373 !important;
+}
+
+.group-code-C025 .sapMGHLICell {
+  background-color: #e4f3e0 !important; /* Verde scuro chiaro */
+  border-left: 8px solid #66bb6a !important;
+}
+
+.group-code-C026 .sapMGHLICell {
+  background-color: #f56f3f !important; /* rosso chiaro */
+  border-left: 8px solid #c12a08 !important;
+}

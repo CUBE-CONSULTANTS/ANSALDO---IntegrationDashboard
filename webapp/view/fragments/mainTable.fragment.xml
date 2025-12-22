@@ -14,16 +14,28 @@
     <items>
       <IconTabFilter
         showAll="true"
-        
         text="{i18n>integ}"
         key="All"
       />
       <IconTabSeparator />
       <IconTabFilter
-        icon="sap-icon://documents"
-        
+        icon="sap-icon://documents"    
         text="{i18n>all}"
         key="All"
+      />
+        <IconTabFilter
+        visible="{=${filterModel>/status} === ''}"
+        icon="sap-icon://accept"    
+        text="{i18n>Success}"
+        iconColor='Positive'
+        key="Success"
+      />
+        <IconTabFilter
+        visible="{=${filterModel>/status} === ''}"
+        icon="sap-icon://message-error"
+        text="{i18n>Error}"
+        key="Error"
+        iconColor='Negative'
       />
     </items>
     <content>

@@ -107,13 +107,17 @@
                             <m:items>
                                 <m:ColumnListItem>
                                     <m:cells>
-                                        <m:Text text="{path:'detailModel>TIME', formatter: '.formatter.formatJsonTime'}" />
-                                        <m:Text text="{detailModel>STATUS}" />
-                                        <m:Text text="{detailModel>JSONRESPONSE}" />
+                                        <m:Text
+                                            text="{path:'detailModel>TIME', formatter: '.formatter.formatJsonTime'}"
+                                        />
+                                        <m:ObjectStatus text="{detailModel>statusText}" state="{detailModel>color}" />
+                                        <m:Text
+                                            text="{detailModel>JSONRESPONSE}"
+                                        />
                                     </m:cells>
                                 </m:ColumnListItem>
                             </m:items>
-                          </m:Table>
+                        </m:Table>
                     </ObjectPageSubSection>
                 </subSections>
             </ObjectPageSection>

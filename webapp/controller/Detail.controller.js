@@ -1,6 +1,3 @@
-/* eslint-disable no-debugger */
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no- */
 sap.ui.define(
 	[
 		"./BaseController",
@@ -59,11 +56,23 @@ sap.ui.define(
 									sap.ui.model.FilterOperator.EQ,
 									sIntegrationId
 								),
-							],
-							expands: ["Results"],
+							]
 						}
 					);
-					const oLogEntry = logs.results[0]?.Results?.results[0];
+					const oLogEntry = logs.results[0]
+					
+					if (oLogEntry.STATUS >= 200 && oLogEntry.STATUS <= 299 ) {
+								oLogEntry.color = 'Success'
+								oLogEntry.statusText = 'Success'
+							} else {
+								oLogEntry.color = 'Error'
+								oLogEntry.statusText = 'Error'
+							}
+					this.getModel("detailModel").setProperty(
+						"/logs",
+						logs.results
+					);
+
 					if (!oLogEntry) return;
 					const sRawData = oLogEntry.JSONREQUEST || "";
 					let oParsedData;
@@ -77,12 +86,6 @@ sap.ui.define(
 							oParsedData = { Error: "Invalid Format", RawContent: sRawData };
 						}
 					}
-
-					this.getModel("detailModel").setProperty(
-						"/logs",
-						logs.results[0].Results.results
-					);
-
 					this.getModel("detailModel").setProperty(
 						"/rawJsonContent",
 						oParsedData
@@ -231,127 +234,7 @@ sap.ui.define(
 
             oDetailModel.setProperty("/dynamicFlatData", aFlatData);
             oTable.bindRows("detailModel>/dynamicFlatData");
-        },
-			
-			onViewSettOpen: function () {
-				const oVSD = this.onOpenDialog(
-					"settDialog",
-					"integdashboard.view.fragments.viewSettingDialogLog",
-					this
-				);
-
-				const aLog = this.getModel("detailModel")?.getProperty("/log") || [];
-				const aFields = [
-					{
-						key: "AUFNR",
-						label: this.oBundle.getText("network"),
-					},
-					{
-						key: "VORNR",
-						label: this.oBundle.getText("opNumb"),
-					},
-					{
-						key: "AUTHMOD",
-						label: this.oBundle.getText("autoreMod"),
-					},
-					{
-						key: "MODDATE",
-						label: this.oBundle.getText("dataMod"),
-					},
-					{
-						key: "MODTIME",
-						label: this.oBundle.getText("oraMod"),
-					},
-					{
-						key: "MODOBJ",
-						label: this.oBundle.getText("oggMod"),
-					},
-					{
-						key: "OLDVAL",
-						label: this.oBundle.getText("oldV"),
-					},
-					{
-						key: "NEWVAL",
-						label: this.oBundle.getText("newV"),
-					},
-					{
-						key: "STATUS",
-						label: this.oBundle.getText("status"),
-					},
-				];
-
-				aFields.forEach((oField) => {
-					const aValues = [
-						...new Set(
-							aLog
-								.map((entry) => entry[oField.key])
-								.filter(
-									(val) => val !== undefined && val !== null && val !== ""
-								)
-						),
-					];
-
-					if (aValues.length > 0) {
-						const oFilterItem = new sap.m.ViewSettingsFilterItem({
-							key: oField.key,
-							text: oField.label,
-						});
-
-						aValues.forEach((sVal) => {
-							oFilterItem.addItem(
-								new sap.m.ViewSettingsItem({
-									key: sVal,
-									text: sVal,
-								})
-							);
-						});
-
-						oVSD.addFilterItem(oFilterItem);
-					}
-				});
-
-				oVSD.open();
-			},
-			handleConfirm: function (oEvent) {
-				const oTable = this.byId("logTable");
-				const mParams = oEvent.getParameters();
-				const oSorter = mParams.sortItem
-					? new sap.ui.model.Sorter(
-							mParams.sortItem.getKey(),
-							mParams.sortDescending
-					  )
-					: null;
-				let oGroupSorter = null;
-				if (mParams.groupItem) {
-					oGroupSorter = new sap.ui.model.Sorter(
-						mParams.groupItem.getKey(),
-						mParams.groupDescending,
-						true
-					);
-				}
-
-				const aFilters = [];
-
-				mParams.filterItems.forEach(function (oItem) {
-					const sKey = oItem.getParent().getKey();
-					const sValue = oItem.getKey();
-
-					aFilters.push(
-						new sap.ui.model.Filter(
-							sKey,
-							sap.ui.model.FilterOperator.EQ,
-							sValue
-						)
-					);
-				});
-
-				const aSorters = [];
-				if (oGroupSorter) aSorters.push(oGroupSorter);
-				if (oSorter) aSorters.push(oSorter);
-
-				oTable.getBinding("rows").filter(aFilters);
-				oTable.getBinding("rows").sort(aSorters);
-			},
+        }
 		});
 	}
 );

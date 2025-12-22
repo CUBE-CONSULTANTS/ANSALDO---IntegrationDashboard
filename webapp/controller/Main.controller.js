@@ -1,5 +1,3 @@
-/* eslint-disable no-debugger */
-/* eslint-disable no- */
 sap.ui.define(
 	[
 		"./BaseController",
@@ -27,10 +25,12 @@ sap.ui.define(
 				this.setModel(models.createMainModel(), "main");
 				this.setModel(new JSONModel(), "integrationsModel");
 				const oFilterModel = models.createFilterModel();
-				this.oBundle = this.getOwnerComponent()
-					.getModel("i18n")
-					.getResourceBundle();
+				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
 				await this._setFiltersModel(oFilterModel);
+				this.getRouter().getRoute("main").attachPatternMatched(this._onObjectMatched, this);
+			},
+			_onObjectMatched: async function (oEvent) {
+				this.onSearch()
 			},
 			_setFiltersModel: async function (oFilterModel) {
 				try {
@@ -319,21 +319,21 @@ sap.ui.define(
 
 			onTabSelect: function (oEvent) {
 				const oTable = oEvent.getSource().getAggregation("content")[0];
-				const oBinding = oTable.getBinding("rows");
+				const oBinding = oTable.getBinding("items");
 				const sKey = oEvent.getParameter("key");
 				let aFilters = [];
-				if (sKey === "Ok") {
+				if (sKey === "Success") {
 					aFilters.push(
 						new sap.ui.model.Filter(
-							"Status",
+							"statusText",
 							sap.ui.model.FilterOperator.EQ,
 							"Success"
 						)
 					);
-				} else if (sKey === "Ko") {
+				} else if (sKey === "Error") {
 					aFilters.push(
 						new sap.ui.model.Filter(
-							"Status",
+							"statusText",
 							sap.ui.model.FilterOperator.EQ,
 							"Error"
 						)
@@ -344,10 +344,7 @@ sap.ui.define(
 				oBinding.filter(aFilters);
 			},
 			onTableRowSelectionChange: function (oEvent) {
-				const sIntegrationId = oEvent
-					.getParameters()
-					.listItem.getBindingContext("integrationsModel")
-					.getObject().ID_INT;
+				const sIntegrationId = oEvent.getParameters().listItem.getBindingContext("integrationsModel").getObject().ID_INT;
 				this.getRouter().navTo("Detail", {
 					integrationId: sIntegrationId,
 				});

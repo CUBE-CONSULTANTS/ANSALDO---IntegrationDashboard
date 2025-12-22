@@ -73,7 +73,6 @@ sap.ui.define(
 				 * If not, it will replace the current entry of the browser history with the main route.
 				 */
 				onNavBack: function () {
-					// this.resetFragmentState()
 					const sPreviousHash = History.getInstance().getPreviousHash();
 					if (sPreviousHash !== undefined) {
 						window.history.go(-1);
@@ -81,79 +80,7 @@ sap.ui.define(
 						this.getRouter().navTo("main", {}, undefined, true);
 					}
 				},
-				// loadFragment: function (
-				// 	sFragmentName,
-				// 	oPage,
-				// 	oController,
-				// 	bCache = true
-				// ) {
-				// 	const oView = oController.getView();
-				// 	const sFullFragmentName =
-				// 		"integdashboard.view.fragments." + sFragmentName;
-				// 	oController._fragmentsCache = oController._fragmentsCache || {};
-				// 	oController._fragmentStack = oController._fragmentStack || [];
-				// 	if (oController._currentFragment) {
-				// 		const oCurrent = oController._currentFragment;
-				// 		oController._currentFragment = null;
-				// 		const isCached = Object.values(
-				// 			oController._fragmentsCache
-				// 		).includes(oCurrent);
-				// 		oPage.removeAllContent();
-				// 		if (!isCached) {
-				// 			oCurrent.destroy(true);
-				// 		}
-				// 	}
-				// 	if (bCache && oController._fragmentsCache[sFragmentName]) {
-				// 		const oFragment = oController._fragmentsCache[sFragmentName];
-				// 		const oOldParent = oFragment.getParent();
-				// 		if (
-				// 			oOldParent &&
-				// 			oOldParent !== oPage &&
-				// 			oOldParent.removeContent
-				// 		) {
-				// 			oOldParent.removeContent(oFragment);
-				// 		}
 
-				// 		oPage.addContent(oFragment);
-				// 		oController._currentFragment = oFragment;
-				// 		oController._fragmentStack.push(oFragment);
-
-				// 		return Promise.resolve(oFragment);
-				// 	}
-				// 	return Fragment.load({
-				// 		id: oView.getId(),
-				// 		name: sFullFragmentName,
-				// 		controller: oController,
-				// 	})
-				// 		.then(function (oFragment) {
-				// 			oPage.addContent(oFragment);
-				// 			oController._currentFragment = oFragment;
-				// 			oController._fragmentStack.push(oFragment);
-
-				// 			if (bCache) {
-				// 				oController._fragmentsCache[sFragmentName] = oFragment;
-				// 			}
-				// 			return oFragment;
-				// 		})
-				// 		.catch(function (err) {
-				// 			console.error("Fragment non trovato:", sFullFragmentName, err);
-				// 		});
-				// },
-
-				// resetFragmentState: function () {
-				// 	this.getModel('titleModel').setProperty("/currentTitle","")
-				// 	const oView = this.getView();
-				// 	const oPage = oView.byId("detailPage");
-
-				// 	if (this._currentFragment) {
-				// 		oPage.removeAllContent(); 
-				// 		this._currentFragment.destroy(); 
-				// 		this._currentFragment = null;
-				// 	}
-
-				// 	this._fragmentStack = [];
-				// 	this._fragmentsCache = {};
-				// },
 				onOpenDialog: function (sDialogName, sFragmentName, oController) {
 					if (!this[sDialogName]) {
 						this[sDialogName] = sap.ui.xmlfragment(sFragmentName, oController);

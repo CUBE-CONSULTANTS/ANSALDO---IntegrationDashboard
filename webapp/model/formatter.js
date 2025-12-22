@@ -1,5 +1,3 @@
-/* eslint-disable no-debugger */
-/* eslint-disable no-nested-ternary */
 sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 	"use strict";
 
