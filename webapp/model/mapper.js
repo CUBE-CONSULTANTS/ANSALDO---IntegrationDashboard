@@ -16,7 +16,7 @@ sap.ui.define(["../model/formatter"], function (formatter) {
 				C011 : "TrackingActivities",
 				C012 : "primaveraEppm",
 				C014 : "contractData",
-				C015 : "Materials/Creation Master",
+				C015 : "Materials/CreationMaster",
 				C016 : "Materials/Bom",
 				C020 : "massUpdateOfNetwork",
 				C021 : "massUpdateOfProductionOrder",
