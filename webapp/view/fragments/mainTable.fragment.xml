@@ -104,14 +104,7 @@
           >
             <Text text="{i18n>status}" />
           </Column>
-          <Column
-            minScreenWidth="Desktop"
-            demandPopin="true"
-            popinDisplay="Block"
-            width="20rem"
-          >
-            <Text text="{i18n>Message}" />
-          </Column>
+          
         </columns>
         <items>
           <ColumnListItem >
@@ -119,8 +112,7 @@
               <Text text="{integrationsModel>ID_INT}" />
               <Text text="{integrationsModel>DESCRIPTION_ID_FLOW}" />
               <Text text="{
-                path: 'integrationsModel>IntegrationDateTime',
-                formatter: '.formatter.formatDateTime'
+                path: 'integrationsModel>IntegrationDateTime'
               }" />
               <Text text="{integrationsModel>SYSTEM_IN}" />
               <Text text="{integrationsModel>SYSTEM_OUT}" />
@@ -128,7 +120,7 @@
                 text="{integrationsModel>statusText}"
                 state="{integrationsModel>color}"
               />
-              <Text text="{integrationsModel>JSONRESPONSE}" />
+              
             </cells>
           </ColumnListItem>
         </items>

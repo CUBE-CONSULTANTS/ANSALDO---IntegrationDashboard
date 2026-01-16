@@ -5,6 +5,32 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 		formatValue: function (value) {
 			return value && value.toUpperCase();
 		},
+		formatPreview: function (s) {
+			if (!s) return "";
+			return s.length > 200 ? s.slice(0, 200) + "..." : s;
+		},
+		formatBackendTimestamp: function (sValue) {
+			if (!sValue || !/^\d{14}$/.test(sValue.trim())) {
+				return "";
+			}
+
+			const ts = sValue.trim();
+
+			const oDate = new Date(
+				ts.slice(0, 4), // year
+				ts.slice(4, 6) - 1, // month
+				ts.slice(6, 8), // day
+				ts.slice(8, 10), // hour
+				ts.slice(10, 12), // minute
+				ts.slice(12, 14) // second
+			);
+
+			const oDateTimeFormat = DateFormat.getDateTimeInstance({
+				pattern: "dd/MM/yyyy HH:mm:ss",
+			});
+
+			return oDateTimeFormat.format(oDate);
+		},
 		formatDate: function (sDate) {
 			if (!sDate) return null;
 			const oDateFormat = DateFormat.getInstance({ pattern: "dd/MM/yyyy" });
@@ -39,7 +65,7 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 			const m = String(new Date(oDate).getMinutes()).padStart(2, "0");
 			const s = String(new Date(oDate).getSeconds()).padStart(2, "0");
 
-			return `${h}${m}${s}`; 
+			return `${h}${m}${s}`;
 		},
 		formatDateTime: function (sDate) {
 			if (!sDate) {

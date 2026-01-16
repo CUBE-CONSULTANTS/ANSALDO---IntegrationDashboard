@@ -1,3 +1,4 @@
+/* eslint-disable no- */
 sap.ui.define(
 	[
 		"./BaseController",
@@ -19,6 +20,7 @@ sap.ui.define(
 				this.setModel(new JSONModel(), "detailModel");
 			},
 			_onObjectMatched: async function (oEvent) {
+				
 				const sIntegrationId = oEvent.getParameter("arguments").integrationId;
 				await this.setLogsTable(sIntegrationId);
 				const oIntegration = this.getModel("detailModel").getProperty("/logs/0");
@@ -29,8 +31,7 @@ sap.ui.define(
 					Code: oIntegration.ID_FLOW,
 					Description: oIntegration.Description,
 					Status: oIntegration.STATUS,
-					IntegrationDate: oIntegration.DATA,
-					IntegrationTime: oIntegration.TIME,
+					IntegrationDate: oIntegration.TIMESTAMP = formatter.formatBackendTimestamp(oIntegration.TIMESTAMP.trim())
 				};
 				const sTitle = sRootKey
 					? this.oBundle.getText(sRootKey) +
@@ -44,6 +45,7 @@ sap.ui.define(
 				this._prepareDynamicTableData();
 			},
 			setLogsTable: async function (sIntegrationId) {
+				
 				this.showBusy(0)
 				try {
 					const logs = await API.getEntitySet(
@@ -68,6 +70,20 @@ sap.ui.define(
 								oLogEntry.color = 'Error'
 								oLogEntry.statusText = 'Error'
 							}
+
+					oLogEntry.JSONRESPONSE = oLogEntry.JSONRESPONSE || "";
+					let oParsedResponse;
+					if (oLogEntry.JSONRESPONSE.trim().startsWith("<")) {
+						oParsedResponse = this._parseXmlToJson(oLogEntry.JSONRESPONSE);
+					} else {
+						try {
+							oParsedResponse = JSON.parse(oLogEntry.JSONRESPONSE || "{}");		
+						} catch (e) {
+							oParsedResponse = { Error: "Invalid Format", RawContent: oLogEntry.JSONRESPONSE };
+						}
+					}
+					oLogEntry.rawJsonResponse = oParsedResponse;
+
 					this.getModel("detailModel").setProperty(
 						"/logs",
 						logs.results
@@ -90,6 +106,7 @@ sap.ui.define(
 						"/rawJsonContent",
 						oParsedData
 					);
+					
 				} catch (error) {
 					MessageBox.error(this.oBundle.getText("dataError"), error);
 				} finally {
@@ -97,6 +114,7 @@ sap.ui.define(
 				}
 			},
 			_parseXmlToJson: function (sXml) {
+				
 				const oParser = new DOMParser();
 				const oXmlDoc = oParser.parseFromString(sXml, "text/xml");
 				const fParseNode = (oNode) => {
@@ -127,6 +145,7 @@ sap.ui.define(
 				return fParseNode(oXmlDoc.documentElement);
 			},
 			_renderHeaderContent: function () {
+				
 				const oDetailModel = this.getModel("detailModel");
 				if (!oDetailModel) return;
 
@@ -164,6 +183,7 @@ sap.ui.define(
 				}
 			},
 			_renderSimpleForm: function () {
+				
         const oDetailModel = this.getModel("detailModel");
         const oRawContent = oDetailModel.getProperty("/rawJsonContent");
         const oHeader = oDetailModel.getProperty("/header");
@@ -203,6 +223,7 @@ sap.ui.define(
       },
 			
 			_prepareDynamicTableData: function () {
+				
             const oDetailModel = this.getModel("detailModel");
             const oRawContent = oDetailModel.getProperty("/rawJsonContent");
             const oTable = this.byId("dynamicTable");

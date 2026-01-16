@@ -1,3 +1,4 @@
+/* eslint-disable no- */
 sap.ui.define(
 	[
 		"./BaseController",
@@ -25,12 +26,16 @@ sap.ui.define(
 				this.setModel(models.createMainModel(), "main");
 				this.setModel(new JSONModel(), "integrationsModel");
 				const oFilterModel = models.createFilterModel();
-				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
+				this.oBundle = this.getOwnerComponent()
+					.getModel("i18n")
+					.getResourceBundle();
 				await this._setFiltersModel(oFilterModel);
-				this.getRouter().getRoute("main").attachPatternMatched(this._onObjectMatched, this);
+				this.getRouter()
+					.getRoute("main")
+					.attachPatternMatched(this._onObjectMatched, this);
 			},
 			_onObjectMatched: async function (oEvent) {
-				this.onSearch()
+				this.onSearch();
 			},
 			_setFiltersModel: async function (oFilterModel) {
 				try {
@@ -88,85 +93,45 @@ sap.ui.define(
 				const oFilterModel = this.getModel("filterModel");
 				const aFilters = [];
 
-				// const fromDateTime = oFilterModel.getProperty("/fromDate");
-				// const toDateTime = oFilterModel.getProperty("/toDate");
+				const fromDateTime = oFilterModel.getProperty("/fromDate");
+				const toDateTime = oFilterModel.getProperty("/toDate");
 				const sIntegrationId = oFilterModel.getProperty("/integrationId");
 				const aDescriptions =
 					oFilterModel.getProperty("/selectedDescriptions") || [];
 				const aSystems = oFilterModel.getProperty("/selectedSys") || [];
 				const sStatus = oFilterModel.getProperty("/status");
 
-				// if (!this._checkDateRange(fromDateTime, toDateTime)) {
-				// 	oFilterModel.setProperty("/fromDate", null);
-				// 	oFilterModel.setProperty("/toDate", null);
-				// 	return null;
-				// }
+				if (!this._checkDateRange(fromDateTime, toDateTime)) {
+					oFilterModel.setProperty("/fromDate", null);
+					oFilterModel.setProperty("/toDate", null);
+					return null;
+				}
 
-				// if (fromDateTime) {
-				// 	const sFromDate = formatter.dateToBackendDate(fromDateTime);
-				// 	const sFromTime = formatter.dateToBackendTime(fromDateTime);
+				if (fromDateTime && toDateTime) {
+					const sFormattedFromDate =
+						formatter.dateToBackendDate(fromDateTime) +
+						formatter.dateToBackendTime(fromDateTime);
+					const sFormattedToDate =
+						formatter.dateToBackendDate(toDateTime) +
+						formatter.dateToBackendTime(toDateTime);
+					const oDateTimeFilter = new sap.ui.model.Filter({
+						filters: [
+							new sap.ui.model.Filter(
+								"TIMESTAMP",
+								sap.ui.model.FilterOperator.GE,
+								sFormattedFromDate
+							),
+							new sap.ui.model.Filter(
+								"TIMESTAMP",
+								sap.ui.model.FilterOperator.LE,
+								sFormattedToDate
+							),
+						],
+						and: true,
+					});
 
-				// 	aFilters.push(
-				// 		new sap.ui.model.Filter({
-				// 			filters: [
-				// 				new sap.ui.model.Filter(
-				// 					"DATA",
-				// 					sap.ui.model.FilterOperator.GT,
-				// 					sFromDate
-				// 				),
-				// 				new sap.ui.model.Filter({
-				// 					filters: [
-				// 						new sap.ui.model.Filter(
-				// 							"DATA",
-				// 							sap.ui.model.FilterOperator.EQ,
-				// 							sFromDate
-				// 						),
-				// 						new sap.ui.model.Filter(
-				// 							"TIME",
-				// 							sap.ui.model.FilterOperator.GE,
-				// 							sFromTime
-				// 						),
-				// 					],
-				// 					and: true,
-				// 				}),
-				// 			],
-				// 			and: false,
-				// 		})
-				// 	);
-				// }
-
-				// if (toDateTime) {
-				// 	const sToDate = formatter.dateToBackendDate(toDateTime);
-				// 	const sToTime = formatter.dateToBackendTime(toDateTime);
-
-				// 	aFilters.push(
-				// 		new sap.ui.model.Filter({
-				// 			filters: [
-				// 				new sap.ui.model.Filter(
-				// 					"DATA",
-				// 					sap.ui.model.FilterOperator.LT,
-				// 					sToDate
-				// 				),
-				// 				new sap.ui.model.Filter({
-				// 					filters: [
-				// 						new sap.ui.model.Filter(
-				// 							"DATA",
-				// 							sap.ui.model.FilterOperator.EQ,
-				// 							sToDate
-				// 						),
-				// 						new sap.ui.model.Filter(
-				// 							"TIME",
-				// 							sap.ui.model.FilterOperator.LE,
-				// 							sToTime
-				// 						),
-				// 					],
-				// 					and: true,
-				// 				}),
-				// 			],
-				// 			and: false,
-				// 		})
-				// 	);
-				// }
+					aFilters.push(oDateTimeFilter);
+				}
 				if (sIntegrationId && sIntegrationId.length > 0) {
 					aFilters.push(
 						new sap.ui.model.Filter(
@@ -258,17 +223,14 @@ sap.ui.define(
 						}
 					);
 					data.results.forEach((element) => {
-						if (element.STATUS >= 200 && element.STATUS <= 299 ) {
-								element.color = 'Success'
-								element.statusText = 'Success'
-							} else {
-								element.color = 'Error'
-								element.statusText = 'Error'
-							}
-						element.IntegrationDateTime = formatter.mergeDateAndTime(
-							element.DATA,
-							element.TIME,
-						);
+						if (element.STATUS >= 200 && element.STATUS <= 299) {
+							element.color = "Success";
+							element.statusText = "Success";
+						} else {
+							element.color = "Error";
+							element.statusText = "Error";
+						}
+						element.IntegrationDateTime = formatter.formatBackendTimestamp(element.TIMESTAMP.trim());
 					});
 					this.getModel("integrationsModel").setProperty("/", data.results);
 				} catch (error) {
@@ -344,7 +306,10 @@ sap.ui.define(
 				oBinding.filter(aFilters);
 			},
 			onTableRowSelectionChange: function (oEvent) {
-				const sIntegrationId = oEvent.getParameters().listItem.getBindingContext("integrationsModel").getObject().ID_INT;
+				const sIntegrationId = oEvent
+					.getParameters()
+					.listItem.getBindingContext("integrationsModel")
+					.getObject().ID_INT;
 				this.getRouter().navTo("Detail", {
 					integrationId: sIntegrationId,
 				});
