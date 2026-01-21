@@ -1,4 +1,4 @@
-/* eslint-disable no- */
+
 sap.ui.define(
 	[
 		"./BaseController",
@@ -305,16 +305,44 @@ sap.ui.define(
 				}
 				oBinding.filter(aFilters);
 			},
-			onTableRowSelectionChange: function (oEvent) {
-				const sIntegrationId = oEvent
-					.getParameters()
-					.listItem.getBindingContext("integrationsModel")
-					.getObject().ID_INT;
-				this.getRouter().navTo("Detail", {
-					integrationId: sIntegrationId,
-				});
-				oEvent.getSource().removeSelections(true);
+			getStream: async function (oEvent) {
+				const oBtn = oEvent.getSource();
+				const sStreamType = oBtn.data("streamType");
+				const sIntegrationId = oBtn.getBindingContext("integrationModel").getObject().ID_INT;
+				try {
+					const oResult = await API._downloadStream(sIntegrationId, sStreamType);
+					this._saveBlob(oResult.blob, oResult.fileName);
+				} catch (error) {
+					console.error(error);
+					MessageBox.error(this.oBundle.getText("streamDownloadError"));	
+				}
 			},
+			_saveBlob: function (oBlob, sFileName) {
+			if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+				window.navigator.msSaveOrOpenBlob(oBlob, sFileName);
+			} else {
+				const oUrl = window.URL || window.webkitURL;
+				const oBlobUrl = oUrl.createObjectURL(oBlob);	
+				const oLink = document.createElement("a");
+				oLink.href = oBlobUrl;
+				oLink.download = sFileName;
+				document.body.appendChild(oLink);
+				oLink.click();
+				document.body.removeChild(oLink);
+				oUrl.revokeObjectURL(oBlobUrl);
+			}
+		},
+			
+			// onTableRowSelectionChange: function (oEvent) {
+			// 	const sIntegrationId = oEvent
+			// 		.getParameters()
+			// 		.listItem.getBindingContext("integrationsModel")
+			// 		.getObject().ID_INT;
+			// 	this.getRouter().navTo("Detail", {
+			// 		integrationId: sIntegrationId,
+			// 	});
+			// 	oEvent.getSource().removeSelections(true);
+			// },
 		});
 	}
 );

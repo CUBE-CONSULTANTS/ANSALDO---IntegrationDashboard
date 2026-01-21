@@ -71,40 +71,36 @@ sap.ui.define(
 								oLogEntry.statusText = 'Error'
 							}
 
-					oLogEntry.JSONRESPONSE = oLogEntry.JSONRESPONSE || "";
-					let oParsedResponse;
-					if (oLogEntry.JSONRESPONSE.trim().startsWith("<")) {
-						oParsedResponse = this._parseXmlToJson(oLogEntry.JSONRESPONSE);
-					} else {
-						try {
-							oParsedResponse = JSON.parse(oLogEntry.JSONRESPONSE || "{}");		
-						} catch (e) {
-							oParsedResponse = { Error: "Invalid Format", RawContent: oLogEntry.JSONRESPONSE };
-						}
-					}
-					oLogEntry.rawJsonResponse = oParsedResponse;
-
 					this.getModel("detailModel").setProperty(
 						"/logs",
 						logs.results
 					);
 
 					if (!oLogEntry) return;
-					const sRawData = oLogEntry.JSONREQUEST || "";
+					const sRawRequest = oLogEntry.JSONREQUEST || "";
+					const sRawResponse = oLogEntry.JSONRESPONSE = oLogEntry.JSONRESPONSE || "";
+					let oParsedResponse;
 					let oParsedData;
 
-					if (sRawData.trim().startsWith("<")) {
-						oParsedData = this._parseXmlToJson(sRawData);
+					if (sRawRequest.trim().startsWith("<")) {
+						oParsedData = this._parseXmlToJson(sRawRequest);
+						oParsedResponse = this._parseXmlToJson(sRawResponse);
 					} else {
 						try {
-							oParsedData = JSON.parse(sRawData || "{}");
+							oParsedData = JSON.parse(sRawRequest || "{}");
+							oParsedResponse = JSON.parse(sRawResponse|| "{}");
 						} catch (e) {
-							oParsedData = { Error: "Invalid Format", RawContent: sRawData };
+							oParsedData = { Error: "Invalid Format", RawContent: sRawRequest };
+							oParsedResponse = { Error: "Invalid Format", RawContent: sRawResponse };
 						}
 					}
 					this.getModel("detailModel").setProperty(
 						"/rawJsonContent",
 						oParsedData
+					);
+					this.getModel("detailModel").setProperty(
+						"/rawJsonResponse",
+						oParsedResponse
 					);
 					
 				} catch (error) {

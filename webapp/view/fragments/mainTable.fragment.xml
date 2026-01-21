@@ -1,6 +1,7 @@
 <c:FragmentDefinition
   xmlns="sap.m"
   xmlns:c="sap.ui.core"
+  xmlns:core="sap.ui.core"
   xmlns:table="sap.ui.table"
 >
   <IconTabBar
@@ -50,12 +51,12 @@
           groupHeaderFactory: '.createGroupHeader'
         }"
         backgroundDesign="Translucent"
-        mode="SingleSelectMaster"
-        selectionChange="onTableRowSelectionChange"
         popinLayout="Block"
         growing="true"
         growingScrollToLoad="true"
       >
+        <!-- mode="SingleSelectMaster"
+        selectionChange="onTableRowSelectionChange" -->
         <columns>
           <Column
             minScreenWidth="Small"
@@ -104,6 +105,24 @@
           >
             <Text text="{i18n>status}" />
           </Column>
+          <Column
+            minScreenWidth="Tablet"
+            demandPopin="true"
+            popinDisplay="Inline"
+            width="10rem"
+            hAlign="Center"
+          >
+            <Text text="{i18n>downloadReq}" />
+          </Column>
+          <Column
+            minScreenWidth="Tablet"
+            demandPopin="true"
+            popinDisplay="Inline"
+            width="10rem"
+            hAlign="Center"
+          >
+            <Text text="{i18n>downloadResp}" />
+          </Column>
           
         </columns>
         <items>
@@ -120,7 +139,19 @@
                 text="{integrationsModel>statusText}"
                 state="{integrationsModel>color}"
               />
-              
+              <Button icon="sap-icon://download"
+                            press=".getStream"
+                            tooltip="{i18n>Request}"
+                            type="Emphasized">
+                            <core:CustomData key="streamType" value="REQUEST"/>
+              </Button>
+
+              <Button icon="sap-icon://download"
+                            press=".getStream"
+                            tooltip="{i18n>Response}"
+                            type="Emphasized">
+                            <core:CustomData key="streamType" value="RESPONSE"/>
+              </Button>
             </cells>
           </ColumnListItem>
         </items>
