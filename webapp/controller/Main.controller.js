@@ -307,14 +307,19 @@ sap.ui.define(
 			},
 			getStream: async function (oEvent) {
 				const oBtn = oEvent.getSource();
-				const sStreamType = oBtn.data("streamType");
-				const sIntegrationId = oBtn.getBindingContext("integrationModel").getObject().ID_INT;
+				const sStreamType = oBtn.getAggregation('tooltip')
+				const sCpiIntegrationId = oBtn._getPropertiesToPropagate().oBindingContexts.integrationsModel.getObject().ID_CPIRUN;
+				const sIdFlow = oBtn._getPropertiesToPropagate().oBindingContexts.integrationsModel.getObject().ID_FLOW;
 				try {
-					const oResult = await API._downloadStream(sIntegrationId, sStreamType);
-					this._saveBlob(oResult.blob, oResult.fileName);
+					this.showBusy(0);
+					const oResult = await API._downloadStream(sCpiIntegrationId, sStreamType);
+					const filename = `${sIdFlow}_${sCpiIntegrationId}_${sStreamType}`;
+					this._saveBlob(oResult.blob, filename);
 				} catch (error) {
 					console.error(error);
 					MessageBox.error(this.oBundle.getText("streamDownloadError"));	
+				} finally {
+					this.hideBusy(0);
 				}
 			},
 			_saveBlob: function (oBlob, sFileName) {

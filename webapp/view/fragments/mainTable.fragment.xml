@@ -143,14 +143,14 @@
                             press=".getStream"
                             tooltip="{i18n>Request}"
                             type="Emphasized">
-                            <core:CustomData key="streamType" value="REQUEST"/>
+                            
               </Button>
 
               <Button icon="sap-icon://download"
                             press=".getStream"
                             tooltip="{i18n>Response}"
                             type="Emphasized">
-                            <core:CustomData key="streamType" value="RESPONSE"/>
+                            
               </Button>
             </cells>
           </ColumnListItem>

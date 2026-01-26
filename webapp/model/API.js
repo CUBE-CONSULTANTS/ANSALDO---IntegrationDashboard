@@ -1,3 +1,4 @@
+
 sap.ui.define([], function () {
 	"use strict";
 
@@ -95,31 +96,23 @@ sap.ui.define([], function () {
 				});
 			});
 		},
-		_downloadStream: async function (sMessageId, sStreamType) {
-			const sUrl = `/api/log-stream/${encodeURIComponent(sMessageId)}`;
+		_downloadStream: async function (sCpiId, sStreamType) {
+			const sUrl =
+    `/sap/opu/odata/SAP/ZLOG_PID999_INTEGRATION_SRV/FileLog('${encodeURIComponent(sCpiId)}')/$value`;
 
 			const oResponse = await fetch(sUrl, {
 				method: "GET",
 				headers: {
-					"X-Stream-Type": sStreamType,
+					"id_cpi": sCpiId,
+					"type": sStreamType,
 				},
 			});
 			if (!oResponse.ok) {
 				throw new Error(`Errore download (${oResponse.status})`);
 			}
 			const oBlob = await oResponse.blob();
-			const sDisposition = oResponse.headers.get("Content-Disposition");
-			let sFileName = `${sMessageId}_${sStreamType}.log`;
-
-			if (sDisposition) {
-				const aMatch = /filename="?([^"]+)"?/.exec(sDisposition);
-				if (aMatch && aMatch[1]) {
-					sFileName = aMatch[1];
-				}
-			}
 			return {
-				blob: oBlob,
-				fileName: sFileName,
+				blob: oBlob
 			};
 		},
 	};
