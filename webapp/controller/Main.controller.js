@@ -1,5 +1,4 @@
-/* eslint-disable no-debugger */
-/* eslint-disable no- */
+
 sap.ui.define(
 	[
 		"./BaseController",
@@ -25,23 +24,59 @@ sap.ui.define(
 			formatter: formatter,
 			onInit: async function () {
 				this.setModel(models.createMainModel(), "main");
-				// const oBundle = this.getResourceBundle();
-				// const oModel = models.createIntegrationMock(oBundle);
-				// this.setModel(oModel, "mockIntegration");
-				// const aResults = oModel.getProperty("/integrationsColl/results") || [];
 				this.setModel(new JSONModel(), "integrationsModel");
 				const oFilterModel = models.createFilterModel();
-				this.oBundle = this.getOwnerComponent().getModel("i18n").getResourceBundle();
-				const translatedDescriptions = oFilterModel
-					.getProperty("/description")
-					.map((item) => {
+				this.oBundle = this.getOwnerComponent()
+					.getModel("i18n")
+					.getResourceBundle();
+				await this._setFiltersModel(oFilterModel);
+				this.getRouter()
+					.getRoute("main")
+					.attachPatternMatched(this._onObjectMatched, this);
+			},
+			_onObjectMatched: async function (oEvent) {
+				this.onSearch();
+			},
+			_setFiltersModel: async function (oFilterModel) {
+				try {
+					this.showBusy(0);
+					const [systems, idFlows] = await Promise.all([
+						API.getEntitySet(
+							this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"),
+							"/GetSystemSet"
+						),
+						API.getEntitySet(
+							this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"),
+							"/GetIDFlowSet"
+						),
+					]);
+					const systemOptions = systems.results.map((item) => {
 						return {
-							key: item.key,
-							text: `${item.key} - ${this.oBundle.getText(item.i18nKey)}`,
+							key: item.IDSystem,
+							text: item.Description,
 						};
 					});
-				oFilterModel.setProperty("/description", translatedDescriptions);
-				this.setModel(oFilterModel, "filterModel");
+					oFilterModel.setProperty("/systemOptions", systemOptions);
+
+					const descriptions = idFlows.results
+						.map((item) => ({
+							key: item.IDFlow,
+							text: `${item.IDFlow} - ${item.Description}`,
+						}))
+						.sort((a, b) => {
+							return a.key.localeCompare(b.key, undefined, {
+								numeric: true,
+								sensitivity: "base",
+							});
+						});
+
+					oFilterModel.setProperty("/description", descriptions);
+					this.setModel(oFilterModel, "filterModel");
+				} catch (error) {
+					MessageBox.error(this.oBundle.getText("dataError"));
+				} finally {
+					this.hideBusy(0);
+				}
 			},
 			createGroupHeader: function (oGroup) {
 				const sCode = oGroup.key;
@@ -54,167 +89,150 @@ sap.ui.define(
 				}).addStyleClass("group-code-" + sCode);
 			},
 
-			onTabSelect: function (oEvent) {
-				const oTable = oEvent.getSource().getAggregation("content")[0];
-				const oBinding = oTable.getBinding("rows");
-				const sKey = oEvent.getParameter("key");
-				let aFilters = [];
-				if (sKey === "Ok") {
-					aFilters.push(
-						new sap.ui.model.Filter(
-							"Status",
-							sap.ui.model.FilterOperator.EQ,
-							"Success"
-						)
-					);
-				} else if (sKey === "Ko") {
-					aFilters.push(
-						new sap.ui.model.Filter(
-							"Status",
-							sap.ui.model.FilterOperator.EQ,
-							"Error"
-						)
-					);
-				} else if (sKey === "All") {
-					aFilters = [];
-				}
-				oBinding.filter(aFilters);
-			},
 			_buildFilters: function () {
 				const oFilterModel = this.getModel("filterModel");
 				const aFilters = [];
 
-				const fromDate = oFilterModel.getProperty("/fromDate");
-				const toDate = oFilterModel.getProperty("/toDate");
-				const integrationIds = oFilterModel.getProperty("/integrationId") || [];
-				const description =
+				const fromDateTime = oFilterModel.getProperty("/fromDate");
+				const toDateTime = oFilterModel.getProperty("/toDate");
+				const sIntegrationId = oFilterModel.getProperty("/integrationId");
+				const aDescriptions =
 					oFilterModel.getProperty("/selectedDescriptions") || [];
-				const system = oFilterModel.getProperty("/system") || [];
-				const status = oFilterModel.getProperty("/status");
+				const aSystems = oFilterModel.getProperty("/selectedSys") || [];
+				const sStatus = oFilterModel.getProperty("/status");
 
-				// if (!this._checkDateRange(fromDate, toDate)) {
-				// 	oFilterModel.setProperty("/fromDate", null);
-				// 	oFilterModel.setProperty("/toDate", null);
-				// 	return null;
-				// }
-				if (fromDate) {
-					const dFrom = new Date(fromDate); 
-					aFilters.push(
-						new sap.ui.model.Filter({
-							path: "IntegrationDateTime",
-							test: function (sValue) {
-								const dValue = new Date(sValue);
-								return dValue >= dFrom;
-							},
-						})
-					);
+				if (!this._checkDateRange(fromDateTime, toDateTime)) {
+					oFilterModel.setProperty("/fromDate", null);
+					oFilterModel.setProperty("/toDate", null);
+					return null;
 				}
 
-				if (toDate) {
-					const dTo = new Date(toDate);
-					dTo.setHours(23, 59, 59, 999);
-
-					aFilters.push(
-						new sap.ui.model.Filter({
-							path: "IntegrationDateTime",
-							test: function (sValue) {
-								const dValue = new Date(sValue);
-								return dValue <= dTo;
-							},
-						})
-					);
-				}
-				if (integrationIds && integrationIds.length > 0) {
-					const idFilters = integrationIds.map(
-						(id) =>
+				if (fromDateTime && toDateTime) {
+					const sFormattedFromDate =
+						formatter.dateToBackendDate(fromDateTime) +
+						formatter.dateToBackendTime(fromDateTime);
+					const sFormattedToDate =
+						formatter.dateToBackendDate(toDateTime) +
+						formatter.dateToBackendTime(toDateTime);
+					const oDateTimeFilter = new sap.ui.model.Filter({
+						filters: [
 							new sap.ui.model.Filter(
-								"ID_INT",
-								sap.ui.model.FilterOperator.EQ,
-								id
-							)
-					);
-					aFilters.push(new sap.ui.model.Filter(idFilters, false));
-				}
-				if (description.length > 0) {
-					const descFilters = description.map(
-						(desc) =>
+								"TIMESTAMP",
+								sap.ui.model.FilterOperator.GE,
+								sFormattedFromDate
+							),
 							new sap.ui.model.Filter(
-								"ID_FLOW",
-								sap.ui.model.FilterOperator.EQ,
-								desc.split(" - ")[0].trim()
-							)
-					);
-					aFilters.push(new sap.ui.model.Filter(descFilters, false));
-				}
-				if (system.length > 0) {
-					const systemFilters = system.map(
-						(s) =>
-							new sap.ui.model.Filter({
-								filters: [
-									new sap.ui.model.Filter(
-										"SysA",
-										sap.ui.model.FilterOperator.EQ,
-										s
-									),
-									new sap.ui.model.Filter(
-										"SysB",
-										sap.ui.model.FilterOperator.EQ,
-										s
-									),
-								],
-								and: false,
-							})
-					);
-					aFilters.push(new sap.ui.model.Filter(systemFilters, false));
-				}
+								"TIMESTAMP",
+								sap.ui.model.FilterOperator.LE,
+								sFormattedToDate
+							),
+						],
+						and: true,
+					});
 
-				if (status) {
-					let formattedStatus = status;
-					if (status === "Success") {
-						formattedStatus = "S";
-					} else if (status === "Error") {
-						formattedStatus = "E";
-					} else { 
-						formattedStatus = "";
-					 }
+					aFilters.push(oDateTimeFilter);
+				}
+				if (sIntegrationId && sIntegrationId.length > 0) {
 					aFilters.push(
 						new sap.ui.model.Filter(
-							"STATUS",
+							"ID_INT",
 							sap.ui.model.FilterOperator.EQ,
-							formattedStatus
+							sIntegrationId
 						)
 					);
 				}
+				if (aDescriptions.length > 0) {
+					const aDescFilters = aDescriptions.map((desc) => {
+						return new sap.ui.model.Filter(
+							"ID_FLOW",
+							sap.ui.model.FilterOperator.EQ,
+							desc.split(" - ")[0].trim()
+						);
+					});
+					aFilters.push(
+						new sap.ui.model.Filter({
+							filters: aDescFilters,
+							and: false,
+						})
+					);
+				}
+				if (aSystems.length > 0) {
+					const aSysFilters = aSystems.map((s) => {
+						if (s >= "") {
+							return new sap.ui.model.Filter(
+								"ID_SYST",
+								sap.ui.model.FilterOperator.EQ,
+								s
+							);
+						}
+					});
+					aFilters.push(
+						new sap.ui.model.Filter({
+							filters: aSysFilters,
+							and: false,
+						})
+					);
+				}
+				if (sStatus) {
+					//success between 200 e 299
+					//error not between 200 e 299
+					let oStatusFilter;
+					if (sStatus === "Success") {
+						oStatusFilter = new sap.ui.model.Filter(
+							"STATUS",
+							sap.ui.model.FilterOperator.BT,
+							"200",
+							"299"
+						);
+					} else if (sStatus === "Error") {
+						oStatusFilter = new sap.ui.model.Filter({
+							filters: [
+								new sap.ui.model.Filter(
+									"STATUS",
+									sap.ui.model.FilterOperator.LT,
+									"200"
+								),
+								new sap.ui.model.Filter(
+									"STATUS",
+									sap.ui.model.FilterOperator.GT,
+									"299"
+								),
+							],
+							and: false,
+						});
+					}
+					if (oStatusFilter) {
+						aFilters.push(oStatusFilter);
+					}
+				}
+
 				return aFilters;
 			},
 			onSearch: async function () {
 				const aFilters = this._buildFilters();
-				
+				if (!aFilters) {
+					return;
+				}
 				try {
 					this.showBusy(0);
-					let data = await API.getEntitySet(
+					const data = await API.getEntitySet(
 						this.getOwnerComponent().getModel("ZLOG_PID999_INTEGRATION_SRV"),
 						"/GetLogsSet",
 						{
 							filters: aFilters,
-							expands: ["Results"],
 						}
 					);
-					data.results[0].Results.results.forEach((element) => {
-						const i18nKey = mapper.getRootKeyByCode(element.ID_FLOW);
-						element.description = this.oBundle.getText(i18nKey);
-						const systems = mapper.getIntegrationSystems(element.ID_FLOW);
-						element.SysA = systems.SysA;
-						element.SysB = systems.SysB;
-						element.IntegrationDateTime = formatter.mergeDateAndTime(
-							element.DATA,
-							element.TIME
-						);
+					data.results.forEach((element) => {
+						if (element.STATUS >= 200 && element.STATUS <= 299) {
+							element.color = "Success";
+							element.statusText = "Success";
+						} else {
+							element.color = "Error";
+							element.statusText = "Error";
+						}
+						element.IntegrationDateTime = formatter.formatBackendTimestamp(element.TIMESTAMP.trim());
 					});
-					this.getModel("integrationsModel").setProperty(
-						"/",
-						data.results[0].Results.results
-					);
+					this.getModel("integrationsModel").setProperty("/", data.results);
 				} catch (error) {
 					MessageBox.error(this.oBundle.getText("dataError"));
 				} finally {
@@ -224,20 +242,25 @@ sap.ui.define(
 			},
 			_checkDateRange: function (fromDate, toDate) {
 				if (!fromDate && !toDate) {
-					MessageBox.error(this.getResourceBundle().getText("selectDateRange"));
+					MessageBox.error(this.oBundle.getText("selectDateRange"));
 					return false;
 				}
-				if (
-					isNaN(new Date(fromDate).getTime()) ||
-					isNaN(new Date(toDate).getTime())
-				) {
-					MessageBox.error(this.getResourceBundle().getText("invalidDate"));
-					return false;
+
+				if (fromDate && toDate) {
+					const oFrom = new Date(fromDate);
+					const oTo = new Date(toDate);
+
+					if (isNaN(oFrom.getTime()) || isNaN(oTo.getTime())) {
+						MessageBox.error(this.oBundle.getText("invalidDate"));
+						return false;
+					}
+
+					if (oFrom > oTo) {
+						MessageBox.error(this.oBundle.getText("dateErrorRange"));
+						return false;
+					}
 				}
-				if (new Date(fromDate) > new Date(toDate)) {
-					MessageBox.error(this.getResourceBundle().getText("dataError"));
-					return false;
-				}
+
 				return true;
 			},
 			onFilterBarClear: function () {
@@ -245,8 +268,8 @@ sap.ui.define(
 				oFilterModel.setProperty("/fromDate", null);
 				oFilterModel.setProperty("/toDate", null);
 				oFilterModel.setProperty("/integrationId", []);
-				oFilterModel.setProperty("/description", "");
-				oFilterModel.setProperty("/system", "");
+				oFilterModel.setProperty("/selectedDescriptions", "");
+				oFilterModel.setProperty("/selectedSys", "");
 				oFilterModel.setProperty("/status", "");
 
 				const oTable = this.byId("integrationTable");
@@ -255,16 +278,76 @@ sap.ui.define(
 				}
 				this.getModel("main").setProperty("/visibility", false);
 			},
-			onTableRowSelectionChange: function (oEvent) {
-				const sIntegrationId = oEvent
-					.getParameters()
-					.listItem.getBindingContext("mockIntegration")
-					.getObject().IntegrationId;
-				this.getRouter().navTo("Detail", {
-					integrationId: sIntegrationId,
-				});
-				oEvent.getSource().removeSelections(true);
+
+			onTabSelect: function (oEvent) {
+				const oTable = oEvent.getSource().getAggregation("content")[0];
+				const oBinding = oTable.getBinding("items");
+				const sKey = oEvent.getParameter("key");
+				let aFilters = [];
+				if (sKey === "Success") {
+					aFilters.push(
+						new sap.ui.model.Filter(
+							"statusText",
+							sap.ui.model.FilterOperator.EQ,
+							"Success"
+						)
+					);
+				} else if (sKey === "Error") {
+					aFilters.push(
+						new sap.ui.model.Filter(
+							"statusText",
+							sap.ui.model.FilterOperator.EQ,
+							"Error"
+						)
+					);
+				} else if (sKey === "All") {
+					aFilters = [];
+				}
+				oBinding.filter(aFilters);
 			},
+			getStream: async function (oEvent) {
+				const oBtn = oEvent.getSource();
+				const sStreamType = oBtn.getAggregation('tooltip')
+				const sCpiIntegrationId = oBtn._getPropertiesToPropagate().oBindingContexts.integrationsModel.getObject().ID_CPIRUN;
+				const sIdFlow = oBtn._getPropertiesToPropagate().oBindingContexts.integrationsModel.getObject().ID_FLOW;
+				try {
+					this.showBusy(0);
+					const oResult = await API._downloadStream(sCpiIntegrationId, sStreamType);
+					const filename = `${sIdFlow}_${sCpiIntegrationId}_${sStreamType}`;
+					this._saveBlob(oResult.blob, filename);
+				} catch (error) {
+					console.error(error);
+					MessageBox.error(this.oBundle.getText("streamDownloadError"));	
+				} finally {
+					this.hideBusy(0);
+				}
+			},
+			_saveBlob: function (oBlob, sFileName) {
+			if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+				window.navigator.msSaveOrOpenBlob(oBlob, sFileName);
+			} else {
+				const oUrl = window.URL || window.webkitURL;
+				const oBlobUrl = oUrl.createObjectURL(oBlob);	
+				const oLink = document.createElement("a");
+				oLink.href = oBlobUrl;
+				oLink.download = sFileName;
+				document.body.appendChild(oLink);
+				oLink.click();
+				document.body.removeChild(oLink);
+				oUrl.revokeObjectURL(oBlobUrl);
+			}
+		},
+			
+			// onTableRowSelectionChange: function (oEvent) {
+			// 	const sIntegrationId = oEvent
+			// 		.getParameters()
+			// 		.listItem.getBindingContext("integrationsModel")
+			// 		.getObject().ID_INT;
+			// 	this.getRouter().navTo("Detail", {
+			// 		integrationId: sIntegrationId,
+			// 	});
+			// 	oEvent.getSource().removeSelections(true);
+			// },
 		});
 	}
 );

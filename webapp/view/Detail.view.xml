@@ -98,7 +98,7 @@
                                     <m:Text text="{i18n>Timestamp}" />
                                 </m:Column>
                                 <m:Column>
-                                    <m:Text text="{i18n>Type}" />
+                                    <m:Text text="{i18n>Status}" />
                                 </m:Column>
                                 <m:Column>
                                     <m:Text text="{i18n>Message}" />
@@ -107,13 +107,17 @@
                             <m:items>
                                 <m:ColumnListItem>
                                     <m:cells>
-                                        <m:Text text="{path: 'detailModel>timestamp', formatter: '.formatter.formatDateTime'}" />
-                                        <m:Text text="{detailModel>type}" />
-                                        <m:Text text="{detailModel>message}" />
+                                        <m:Text
+                                            text="{path:'detailModel>TIMESTAMP', formatter: '.formatter.formatJsonTime'}"
+                                        />
+                                        <m:ObjectStatus text="{detailModel>statusText}" state="{detailModel>color}" />
+                                        <m:Text
+                                            text="{detailModel>rawJsonResponse}"
+                                        />
                                     </m:cells>
                                 </m:ColumnListItem>
                             </m:items>
-                          </m:Table>
+                        </m:Table>
                     </ObjectPageSubSection>
                 </subSections>
             </ObjectPageSection>

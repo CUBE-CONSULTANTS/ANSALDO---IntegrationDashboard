@@ -67,13 +67,12 @@
                 visibleInFilterBar="true"
             >
                 <fb:control>
-                    <!-- <Input value="{filterModel>/description}" /> -->
                     <MultiComboBox
                         selectedKeys="{filterModel>/selectedDescriptions}"
                         items="{
-            path: 'filterModel>/description',
-            templateShareable: true
-        }"
+                        path: 'filterModel>/description',
+                        templateShareable: true
+                        }"
                     >
                         <c:Item
                             key="{filterModel>key}"
@@ -90,35 +89,13 @@
                 visibleInFilterBar="true"
             >
                 <fb:control>
-                    <!-- <Input value="{filterModel>/system}" /> -->
-                    <MultiComboBox selectedKeys="{filterModel>/system}">
+                    <MultiComboBox
+                        selectedKeys="{filterModel>/selectedSys}"
+                        items="{ path: 'filterModel>/systemOptions', templateShareable: true }"
+                    >
                         <c:Item
-                            key="ADP"
-                            text="ADP"
-                        />
-                        <c:Item
-                            key="Autodesk Vault"
-                            text="Autodesk Vault"
-                        />
-                        <c:Item
-                            key="Expense In"
-                            text="Expense In"
-                        />
-                        <c:Item
-                            key="Oracle Primavera"
-                            text="Oracle Primavera"
-                        />
-                        <c:Item
-                            key="SAP S/4 Hana"
-                            text="SAP S/4 Hana"
-                        />
-                        <c:Item
-                            key="SAP SuccessFactor"
-                            text="SAP SuccessFactor"
-                        />
-                        <c:Item
-                            key="Timesheet / Kiosk"
-                            text="Timesheet / Kiosk"
+                            key="{filterModel>key}"
+                            text="{filterModel>text}"
                         />
                     </MultiComboBox>
                 </fb:control>

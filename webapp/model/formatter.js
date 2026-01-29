@@ -1,11 +1,35 @@
-/* eslint-disable no-nested-ternary */
-/* eslint-disable no- */
 sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 	"use strict";
 
 	return {
 		formatValue: function (value) {
 			return value && value.toUpperCase();
+		},
+		formatPreview: function (s) {
+			if (!s) return "";
+			return s.length > 200 ? s.slice(0, 200) + "..." : s;
+		},
+		formatBackendTimestamp: function (sValue) {
+			if (!sValue || !/^\d{14}$/.test(sValue.trim())) {
+				return "";
+			}
+
+			const ts = sValue.trim();
+
+			const oDate = new Date(
+				ts.slice(0, 4), // year
+				ts.slice(4, 6) - 1, // month
+				ts.slice(6, 8), // day
+				ts.slice(8, 10), // hour
+				ts.slice(10, 12), // minute
+				ts.slice(12, 14) // second
+			);
+
+			const oDateTimeFormat = DateFormat.getDateTimeInstance({
+				pattern: "dd/MM/yyyy HH:mm:ss",
+			});
+
+			return oDateTimeFormat.format(oDate);
 		},
 		formatDate: function (sDate) {
 			if (!sDate) return null;
@@ -27,6 +51,21 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 			const seconds = parseInt(timeStr.slice(4, 6), 10);
 
 			return new Date(year, month, day, hours, minutes, seconds);
+		},
+		dateToBackendDate: function (oDate) {
+			const y = new Date(oDate).getFullYear();
+			const m = String(new Date(oDate).getMonth() + 1).padStart(2, "0");
+			const d = String(new Date(oDate).getDate()).padStart(2, "0");
+
+			return `${y}${m}${d}`;
+		},
+
+		dateToBackendTime: function (oDate) {
+			const h = String(new Date(oDate).getHours()).padStart(2, "0");
+			const m = String(new Date(oDate).getMinutes()).padStart(2, "0");
+			const s = String(new Date(oDate).getSeconds()).padStart(2, "0");
+
+			return `${h}${m}${s}`;
 		},
 		formatDateTime: function (sDate) {
 			if (!sDate) {
@@ -54,6 +93,18 @@ sap.ui.define(["sap/ui/core/format/DateFormat"], function (DateFormat) {
 					sValue.slice(4, 6) +
 					"/" +
 					sValue.slice(0, 4)
+				);
+			}
+			return sValue;
+		},
+		formatJsonTime: function (sValue) {
+			if (typeof sValue === "string" && /^\d{6}$/.test(sValue)) {
+				return (
+					sValue.slice(0, 2) +
+					":" +
+					sValue.slice(2, 4) +
+					":" +
+					sValue.slice(4, 6)
 				);
 			}
 			return sValue;

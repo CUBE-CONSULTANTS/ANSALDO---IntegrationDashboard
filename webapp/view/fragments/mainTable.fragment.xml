@@ -1,6 +1,7 @@
 <c:FragmentDefinition
   xmlns="sap.m"
   xmlns:c="sap.ui.core"
+  xmlns:core="sap.ui.core"
   xmlns:table="sap.ui.table"
 >
   <IconTabBar
@@ -14,16 +15,28 @@
     <items>
       <IconTabFilter
         showAll="true"
-        
         text="{i18n>integ}"
         key="All"
       />
       <IconTabSeparator />
       <IconTabFilter
-        icon="sap-icon://documents"
-        
+        icon="sap-icon://documents"    
         text="{i18n>all}"
         key="All"
+      />
+        <IconTabFilter
+        visible="{=${filterModel>/status} === ''}"
+        icon="sap-icon://accept"    
+        text="{i18n>Success}"
+        iconColor='Positive'
+        key="Success"
+      />
+        <IconTabFilter
+        visible="{=${filterModel>/status} === ''}"
+        icon="sap-icon://message-error"
+        text="{i18n>Error}"
+        key="Error"
+        iconColor='Negative'
       />
     </items>
     <content>
@@ -38,12 +51,12 @@
           groupHeaderFactory: '.createGroupHeader'
         }"
         backgroundDesign="Translucent"
-        mode="SingleSelectMaster"
-        selectionChange="onTableRowSelectionChange"
         popinLayout="Block"
         growing="true"
         growingScrollToLoad="true"
       >
+        <!-- mode="SingleSelectMaster"
+        selectionChange="onTableRowSelectionChange" -->
         <columns>
           <Column
             minScreenWidth="Small"
@@ -93,30 +106,52 @@
             <Text text="{i18n>status}" />
           </Column>
           <Column
-            minScreenWidth="Desktop"
+            minScreenWidth="Tablet"
             demandPopin="true"
-            popinDisplay="Block"
-            width="20rem"
+            popinDisplay="Inline"
+            width="10rem"
+            hAlign="Center"
           >
-            <Text text="{i18n>Message}" />
+            <Text text="{i18n>downloadReq}" />
           </Column>
+          <Column
+            minScreenWidth="Tablet"
+            demandPopin="true"
+            popinDisplay="Inline"
+            width="10rem"
+            hAlign="Center"
+          >
+            <Text text="{i18n>downloadResp}" />
+          </Column>
+          
         </columns>
         <items>
           <ColumnListItem >
             <cells>
               <Text text="{integrationsModel>ID_INT}" />
-              <Text text="{integrationsModel>description}" />
+              <Text text="{integrationsModel>DESCRIPTION_ID_FLOW}" />
               <Text text="{
-                path: 'integrationsModel>IntegrationDateTime',
-                formatter: '.formatter.formatDateTime'
+                path: 'integrationsModel>IntegrationDateTime'
               }" />
-              <Text text="{integrationsModel>SysA}" />
-              <Text text="{integrationsModel>SysB}" />
+              <Text text="{integrationsModel>SYSTEM_IN}" />
+              <Text text="{integrationsModel>SYSTEM_OUT}" />
               <ObjectStatus
-                text="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : 'Error' }"
-                state="{= ${integrationsModel>STATUS} === 'S' ? 'Success' : (${integrationsModel>STATUS} === 'E' ? 'Error' : 'None') }"
+                text="{integrationsModel>statusText}"
+                state="{integrationsModel>color}"
               />
-              <Text text="{integrationsModel>JSONRESPONSE}" />
+              <Button icon="sap-icon://download"
+                            press=".getStream"
+                            tooltip="{i18n>Request}"
+                            type="Emphasized">
+                            
+              </Button>
+
+              <Button icon="sap-icon://download"
+                            press=".getStream"
+                            tooltip="{i18n>Response}"
+                            type="Emphasized">
+                            
+              </Button>
             </cells>
           </ColumnListItem>
         </items>
